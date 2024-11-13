@@ -28,7 +28,6 @@ appLoop:
 
 		switch command {
 		case "add":
-			//task := input[4:]
 			a.HandleAdd(input)
 
 		case "list":
