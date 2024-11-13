@@ -9,7 +9,6 @@ import (
 	"todo_app/internal/storage"
 )
 
-// test the printing of cli app?
 func TestCliListToDos(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.ToDo{
 		{Task: "Task 1", Completed: false},
