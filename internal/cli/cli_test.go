@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"bytes"
+	"os"
 	"slices"
 	"testing"
 	"todo_app/internal/models"
@@ -8,8 +10,19 @@ import (
 )
 
 // test the printing of cli app?
-// func TestListToDos(t *testing.T) {
-// }
+func TestCliListToDos(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.ToDo{
+		{Task: "Task 1", Completed: false},
+		{Task: "Task 2", Completed: true},
+	}}
+	app := App{Store: store}
+	expected := "1. Task 1 [Completed: false]\n2. Task 2 [Completed: true]\n"
+	actual := CaptureOutputOf(app.ListToDos)
+
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
+	}
+}
 
 func TestCliHandleAddToDo(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.ToDo{
@@ -85,4 +98,19 @@ func TestCliHandleEdit(t *testing.T) {
 	if !slices.Equal(actual, expected) {
 		t.Errorf("Expected %v, got %v", expected, actual)
 	}
+}
+
+func CaptureOutputOf(function func()) string {
+	var buffer bytes.Buffer
+	originalOutputSetting := os.Stdout
+	readEnd, writeEnd, _ := os.Pipe()
+	os.Stdout = writeEnd
+
+	function()
+
+	writeEnd.Close()
+	os.Stdout = originalOutputSetting
+
+	buffer.ReadFrom(readEnd)
+	return buffer.String()
 }

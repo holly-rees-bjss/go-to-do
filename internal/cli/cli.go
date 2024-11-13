@@ -66,6 +66,7 @@ func (a App) ListToDos() {
 func (a App) HandleAdd(input string) {
 	task := input[4:]
 	toDo := models.ToDo{Task: task, Completed: false}
+
 	a.Store.Add(toDo)
 }
 
@@ -74,6 +75,7 @@ func (a App) HandleMarkComplete(input string) {
 	if err != nil {
 		fmt.Println("please enter valid task number ie for task 1 'complete 1'")
 	}
+
 	err = a.Store.MarkComplete(taskNumber)
 	if err != nil {
 		fmt.Println("Couldn't mark complete: ", err)
@@ -85,6 +87,7 @@ func (a App) HandleDelete(input string) {
 	if err != nil {
 		fmt.Println("please enter valid task number ie for task 1 'complete 1'")
 	}
+
 	err = a.Store.Delete(taskNumber)
 	if err != nil {
 		fmt.Println("Couldn't delete: ", err)
@@ -98,6 +101,7 @@ func (a App) HandleEdit(input string) {
 		fmt.Println("please enter valid task number ie for task 1 'complete 1'")
 	}
 	editedTask := strings.Join(args[2:], " ")
+
 	err = a.Store.EditToDo(taskNumber, editedTask)
 	if err != nil {
 		fmt.Println("Couldn't edit: ", err)
