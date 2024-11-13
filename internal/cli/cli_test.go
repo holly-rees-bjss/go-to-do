@@ -12,7 +12,7 @@ import (
 // }
 
 // this tests the conversion from string to ToDo
-func TestCliAddToDo(t *testing.T) {
+func TestCliHandleAddToDo(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.ToDo{
 		{Task: "Task 1", Completed: false},
 	}}
@@ -23,7 +23,7 @@ func TestCliAddToDo(t *testing.T) {
 		{Task: "Task 2", Completed: false},
 	}
 
-	app.Add("Task 2")
+	app.HandleAdd("add Task 2")
 	actual := app.Store.GetTodos()
 
 	if !slices.Equal(actual, expected) {
@@ -32,22 +32,22 @@ func TestCliAddToDo(t *testing.T) {
 }
 
 // ask alan/oliver about this test - just testing what's already been tested in inmemory test?
-func TestCliMarkComplete(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-	}}
-	app := App{Store: store}
+// func TestCliMarkComplete(t *testing.T) {
+// 	store := &storage.Inmemory{Todos: []models.ToDo{
+// 		{Task: "Task 1", Completed: false},
+// 	}}
+// 	app := App{Store: store}
 
-	expected := []models.ToDo{
-		{Task: "Task 1", Completed: true},
-	}
+// 	expected := []models.ToDo{
+// 		{Task: "Task 1", Completed: true},
+// 	}
 
-	app.MarkComplete(1)
-	actual := app.Store.GetTodos()
+// 	app.MarkComplete(1)
+// 	actual := app.Store.GetTodos()
 
-	if !slices.Equal(actual, expected) {
-		t.Errorf("Expected %v, got %v", expected, actual)
-	}
-}
+// 	if !slices.Equal(actual, expected) {
+// 		t.Errorf("Expected %v, got %v", expected, actual)
+// 	}
+// }
 
 // tests for CLI interface? mock?
