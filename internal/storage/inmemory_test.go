@@ -106,3 +106,19 @@ func TestEditToDo(t *testing.T) {
 	}
 
 }
+
+func TestGetToDo(t *testing.T) {
+	store := &Inmemory{Todos: []models.ToDo{
+		{Task: "Task 1", Completed: false},
+		{Task: "Task 2", Completed: false},
+		{Task: "Task 3", Completed: false},
+	}}
+
+	expected := models.ToDo{Task: "Task 2", Completed: false}
+
+	actual := store.GetToDo(2)
+
+	if actual != expected {
+		t.Errorf("Expected %v, got %v", expected, actual)
+	}
+}

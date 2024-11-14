@@ -45,3 +45,8 @@ func (m *Inmemory) EditToDo(num int, edit string) error {
 	m.Todos[i].Task = edit
 	return nil
 }
+
+func (m *Inmemory) GetToDo(num int) models.ToDo {
+	i := num - 1
+	return m.Todos[i]
+}

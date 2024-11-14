@@ -83,9 +83,83 @@ func TestPostTodoHandler(t *testing.T) {
 		}
 	})
 
-	t.Run("POST /api/todo returns a 200 status code when successful", func(t *testing.T) {
+	t.Run("POST /api/todo returns a 201 status code when successful", func(t *testing.T) {
 
 		expected := http.StatusCreated
+		actual := response.Code
+
+		if actual != expected {
+			t.Errorf("returned wrong status code: got %v expected %v", actual, expected)
+		}
+	})
+}
+
+func TestPatchTodoStatusHandler(t *testing.T) {
+
+	store := &storage.Inmemory{Todos: []models.ToDo{
+		{Task: "Task 1", Completed: false},
+		{Task: "Task 2", Completed: false},
+	}}
+
+	patch := StatusPatch{Completed: true}
+	body, _ := json.Marshal(patch)
+	request, _ := http.NewRequest(http.MethodPatch, "/api/todo/1", strings.NewReader(string(body)))
+	response := httptest.NewRecorder()
+
+	serv := &Server{store}
+	handler := http.HandlerFunc(serv.PatchTodoStatus)
+
+	handler.ServeHTTP(response, request)
+
+	t.Run("PATCH /api/todo/{i} returns the patched todo", func(t *testing.T) {
+
+		expected := `{"Task":"Task 1","Completed":true}`
+		actual := strings.TrimSpace(response.Body.String())
+
+		if actual != expected {
+			t.Errorf("Expected %v, got %v", expected, actual)
+		}
+	})
+
+	t.Run("PATCH /api/todo/{i} returns a 200 status code when successful", func(t *testing.T) {
+
+		expected := http.StatusOK
+		actual := response.Code
+
+		if actual != expected {
+			t.Errorf("returned wrong status code: got %v expected %v", actual, expected)
+		}
+	})
+}
+
+func TestDeleteTodoHandler(t *testing.T) {
+
+	store := &storage.Inmemory{Todos: []models.ToDo{
+		{Task: "Task 1", Completed: false},
+		{Task: "Task 2", Completed: false},
+	}}
+
+	request, _ := http.NewRequest(http.MethodDelete, "/api/todo/1", nil)
+	response := httptest.NewRecorder()
+
+	serv := &Server{store}
+	handler := http.HandlerFunc(serv.DeleteTodo)
+
+	handler.ServeHTTP(response, request)
+
+	t.Run("DELETE /api/todo/{i} deletes todo", func(t *testing.T) {
+
+		expected := 1
+		actual := len(store.Todos)
+
+		if actual != expected {
+			t.Errorf("Expected %v, got %v", expected, actual)
+		}
+	})
+
+	t.Run("DELETE /api/todo/{i} returns a 200 status code when successful", func(t *testing.T) {
+
+		expected := http.StatusOK
 		actual := response.Code
 
 		if actual != expected {

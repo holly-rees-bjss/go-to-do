@@ -6,4 +6,5 @@ type Store interface {
 	MarkComplete(int) error
 	Delete(int) error
 	EditToDo(int, string) error
+	GetToDo(int) ToDo
 }
