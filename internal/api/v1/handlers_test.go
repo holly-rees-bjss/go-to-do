@@ -149,11 +149,16 @@ func TestDeleteTodoHandler(t *testing.T) {
 
 	t.Run("DELETE /api/todo/{i} deletes todo", func(t *testing.T) {
 
-		expected := 1
-		actual := len(store.Todos)
+		expectedLen := 1
+		actualLen := len(store.Todos)
+		expected := models.ToDo{Task: "Task 2", Completed: false}
+		actual := store.Todos[0]
 
 		if actual != expected {
 			t.Errorf("Expected %v, got %v", expected, actual)
+		}
+		if actualLen != expectedLen {
+			t.Errorf("Expected length %v, got %v", expected, actual)
 		}
 	})
 
