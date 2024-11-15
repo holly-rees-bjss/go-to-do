@@ -13,7 +13,7 @@ import (
 
 func TestGetHandler(t *testing.T) {
 
-	store := &storage.Inmemory{Todos: []models.ToDo{
+	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 	}}
@@ -28,12 +28,12 @@ func TestGetHandler(t *testing.T) {
 
 	t.Run("GET /api/todos returns a JSON list of Todos", func(t *testing.T) {
 
-		expected := []models.ToDo{
+		expected := []models.Todo{
 			{Task: "Task 1", Status: "Not Started"},
 			{Task: "Task 2", Status: "Not Started"},
 		}
 
-		var actual []models.ToDo
+		var actual []models.Todo
 		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
 			t.Fatal(err)
 		}
@@ -60,7 +60,7 @@ func TestGetHandler(t *testing.T) {
 
 func TestPostTodoHandler(t *testing.T) {
 	store := &storage.Inmemory{}
-	todo := models.ToDo{Task: "Task 1", Status: "Not Started"}
+	todo := models.Todo{Task: "Task 1", Status: "Not Started"}
 	body, _ := json.Marshal(todo)
 
 	request, _ := http.NewRequest(http.MethodPost, "/api/todo", strings.NewReader(string(body)))
@@ -73,9 +73,9 @@ func TestPostTodoHandler(t *testing.T) {
 
 	t.Run("POST /api/todo returns newly posted Todo", func(t *testing.T) {
 
-		expected := models.ToDo{Task: "Task 1", Status: "Not Started"}
+		expected := models.Todo{Task: "Task 1", Status: "Not Started"}
 
-		var actual models.ToDo
+		var actual models.Todo
 		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
 			t.Fatal(err)
 		}
@@ -88,7 +88,7 @@ func TestPostTodoHandler(t *testing.T) {
 
 	t.Run("POST /api/todo adds todo to storage", func(t *testing.T) {
 
-		expected := []models.ToDo{
+		expected := []models.Todo{
 			{Task: "Task 1", Status: "Not Started"},
 		}
 		actual := store.Todos
@@ -111,7 +111,7 @@ func TestPostTodoHandler(t *testing.T) {
 
 func TestPatchTodoStatusCompletedHandler(t *testing.T) {
 
-	store := &storage.Inmemory{Todos: []models.ToDo{
+	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 	}}
@@ -128,9 +128,9 @@ func TestPatchTodoStatusCompletedHandler(t *testing.T) {
 
 	t.Run("PATCH /api/todo/{i} returns the patched todo", func(t *testing.T) {
 
-		expected := models.ToDo{Task: "Task 1", Status: "Completed"}
+		expected := models.Todo{Task: "Task 1", Status: "Completed"}
 
-		var actual models.ToDo
+		var actual models.Todo
 		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
 			t.Fatal(err)
 		}
@@ -154,7 +154,7 @@ func TestPatchTodoStatusCompletedHandler(t *testing.T) {
 
 func TestDeleteTodoHandler(t *testing.T) {
 
-	store := &storage.Inmemory{Todos: []models.ToDo{
+	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 	}}
@@ -171,7 +171,7 @@ func TestDeleteTodoHandler(t *testing.T) {
 
 		expectedLen := 1
 		actualLen := len(store.Todos)
-		expected := models.ToDo{Task: "Task 2", Status: "Not Started"}
+		expected := models.Todo{Task: "Task 2", Status: "Not Started"}
 		actual := store.Todos[0]
 
 		if actual != expected {

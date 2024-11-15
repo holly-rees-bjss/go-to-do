@@ -8,13 +8,13 @@ import (
 )
 
 func TestGetToDos(t *testing.T) {
-	store := &Inmemory{Todos: []models.ToDo{
+	store := &Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 		{Task: "Task 3", Status: "Not Started"},
 	}}
 
-	expected := []models.ToDo{
+	expected := []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 		{Task: "Task 3", Status: "Not Started"},
@@ -28,15 +28,15 @@ func TestGetToDos(t *testing.T) {
 }
 
 func TestAddToDo(t *testing.T) {
-	store := &Inmemory{Todos: []models.ToDo{
+	store := &Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 		{Task: "Task 3", Status: "Not Started"},
 	}}
 
-	newToDo := models.ToDo{Task: "Task 4", Status: "Not Started"}
+	newToDo := models.Todo{Task: "Task 4", Status: "Not Started"}
 
-	expected := []models.ToDo{
+	expected := []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 		{Task: "Task 3", Status: "Not Started"},
@@ -53,72 +53,60 @@ func TestAddToDo(t *testing.T) {
 }
 
 func TestMarkComplete(t *testing.T) {
-	store := &Inmemory{Todos: []models.ToDo{
+	store := &Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 		{Task: "Task 3", Status: "Not Started"},
 	}}
-	expected := []models.ToDo{
-		{Task: "Task 1", Status: "Not Started"},
-		{Task: "Task 2", Status: "Not Started"},
-		{Task: "Task 3", Status: "Completed"},
-	}
+	expected := "Completed"
 
 	store.MarkComplete(3)
-	actual := store.Todos
+	actual := store.Todos[2].Status
 
-	if !slices.Equal(actual, expected) {
-		t.Errorf("Expected %v, got %v", expected, actual)
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
 	}
 }
 
 func TestMarkNotStarted(t *testing.T) {
-	store := &Inmemory{Todos: []models.ToDo{
+	store := &Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 		{Task: "Task 3", Status: "Completed"},
 	}}
-	expected := []models.ToDo{
-		{Task: "Task 1", Status: "Not Started"},
-		{Task: "Task 2", Status: "Not Started"},
-		{Task: "Task 3", Status: "Not Started"},
-	}
+	expected := "Not Started"
 
 	store.MarkNotStarted(3)
-	actual := store.Todos
+	actual := store.Todos[2].Status
 
-	if !slices.Equal(actual, expected) {
-		t.Errorf("Expected %v, got %v", expected, actual)
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
 	}
 }
 
 func TestMarkInProgress(t *testing.T) {
-	store := &Inmemory{Todos: []models.ToDo{
+	store := &Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 		{Task: "Task 3", Status: "Completed"},
 	}}
-	expected := []models.ToDo{
-		{Task: "Task 1", Status: "Not Started"},
-		{Task: "Task 2", Status: "Not Started"},
-		{Task: "Task 3", Status: "In Progress"},
-	}
+	expected := "In Progress"
 
 	store.MarkInProgress(3)
-	actual := store.Todos
+	actual := store.Todos[2].Status
 
-	if !slices.Equal(actual, expected) {
-		t.Errorf("Expected %v, got %v", expected, actual)
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
 	}
 }
 
 func TestDeleteToDo(t *testing.T) {
-	store := &Inmemory{Todos: []models.ToDo{
+	store := &Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 		{Task: "Task 3", Status: "Not Started"},
 	}}
-	expected := []models.ToDo{
+	expected := []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 	}
@@ -132,10 +120,10 @@ func TestDeleteToDo(t *testing.T) {
 }
 
 func TestEditToDo(t *testing.T) {
-	store := &Inmemory{Todos: []models.ToDo{
+	store := &Inmemory{Todos: []models.Todo{
 		{Task: "feed the cat", Status: "Not Started"},
 	}}
-	expected := []models.ToDo{
+	expected := []models.Todo{
 		{Task: "feed the dog", Status: "Not Started"},
 	}
 
@@ -149,13 +137,13 @@ func TestEditToDo(t *testing.T) {
 }
 
 func TestGetToDo(t *testing.T) {
-	store := &Inmemory{Todos: []models.ToDo{
+	store := &Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 		{Task: "Task 3", Status: "Not Started"},
 	}}
 
-	expected := models.ToDo{Task: "Task 2", Status: "Not Started"}
+	expected := models.Todo{Task: "Task 2", Status: "Not Started"}
 
 	actual := store.GetToDo(2)
 
@@ -165,7 +153,7 @@ func TestGetToDo(t *testing.T) {
 }
 
 func TestLastUpdatedUpdatesAfterStatusUpdate(t *testing.T) {
-	store := &Inmemory{Todos: []models.ToDo{
+	store := &Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 	}}
@@ -180,5 +168,40 @@ func TestLastUpdatedUpdatesAfterStatusUpdate(t *testing.T) {
 
 	if !updatedTime.After(initialTime) {
 		t.Errorf("expected LastUpdated to be after %v, got %v", initialTime, updatedTime)
+	}
+}
+
+func TestCompleteItemsAutomaticallyMovedToArchiveList(t *testing.T) {
+	store := &Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+	}}
+
+	store.MarkComplete(2)
+
+	expected := "Task 2"
+	actual := store.Archive[0].Task
+
+	if actual != expected {
+		t.Errorf("Expected %v, got %v", expected, actual)
+	}
+}
+
+func TestCheckOverdue(t *testing.T) {
+	pastDueDate := time.Now().Add(-24 * time.Hour)
+	futureDueDate := time.Now().Add(24 * time.Hour)
+
+	store := &Inmemory{Todos: []models.Todo{
+		models.NewToDo("Task 1", pastDueDate),
+		models.NewToDo("Task 2", futureDueDate),
+	}}
+
+	store.CheckAnyOverdue()
+
+	expected := "Task 1"
+	actual := store.Overdue[0].Task
+
+	if actual != expected {
+		t.Errorf("Expected %v, got %v", expected, actual)
 	}
 }

@@ -24,7 +24,7 @@ func (s *Server) GetTodos(writer http.ResponseWriter, request *http.Request) {
 
 func (s *Server) PostTodo(writer http.ResponseWriter, request *http.Request) {
 	body, _ := io.ReadAll(request.Body)
-	var todo models.ToDo
+	var todo models.Todo
 	_ = json.Unmarshal(body, &todo)
 
 	s.Store.Add(todo)

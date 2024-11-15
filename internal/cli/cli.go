@@ -16,11 +16,11 @@ type App struct {
 
 func (a App) Run() {
 	fmt.Println("Welcome to your CLI to-do app!\nHere's your To-Do list:")
-	a.ListToDos()
+	a.HandleList()
 
 appLoop:
 	for {
-		fmt.Println("What would you like to do? (add [task] [optional: due date], list, complete [task number], delete [task number], edit [task number] [new desciption], exit)")
+		fmt.Println("What would you like to do? (add [task] [optional: due date], list, complete [task number], in progress [task number], delete [task number], edit [task number] [new desciption], exit)")
 		fmt.Println("Example: add finish to-do app 22-11-2024")
 		reader := bufio.NewReader(os.Stdin)
 		input, _ := reader.ReadString('\n')
@@ -33,10 +33,13 @@ appLoop:
 			a.HandleAdd(input)
 
 		case "list":
-			a.ListToDos()
+			a.HandleList(input)
 
 		case "complete":
 			a.HandleMarkComplete(input)
+
+		case "in progress":
+			a.HandleMarkInProgress(input)
 
 		case "delete":
 			a.HandleDelete(input)
@@ -56,13 +59,26 @@ appLoop:
 
 }
 
-func (a App) ListToDos() {
-	todos := a.Store.GetTodos()
+func (a App) HandleList(input ...string) {
+	parts := strings.Split(input[0], " ")
+	selected := strings.TrimSpace(parts[1])
 
-	for i, todo := range todos {
-		taskNum := strconv.Itoa(1 + i)
-		fmt.Println(taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]")
+	switch selected {
+	case "archive":
+
+		for i, todo := range a.Store.GetArchive() {
+			taskNum := strconv.Itoa(1 + i)
+			fmt.Println(taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]")
+		}
+	default:
+		todos := a.Store.GetTodos()
+
+		for i, todo := range todos {
+			taskNum := strconv.Itoa(1 + i)
+			fmt.Println(taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]")
+		}
 	}
+
 }
 
 func (a App) HandleAdd(input string) {
@@ -72,11 +88,11 @@ func (a App) HandleAdd(input string) {
 	layout := "02-01-2006"
 	dueDate, err := time.Parse(layout, parts[len(parts)-1])
 
-	var toDo models.ToDo
+	var toDo models.Todo
 
 	if err != nil {
-		fmt.Println("Error parsing date:", err)
-		toDo = models.ToDo{Task: task, Status: "Not Started"}
+		task = strings.Join(parts[1:], " ")
+		toDo = models.Todo{Task: task, Status: "Not Started"}
 	} else {
 
 		toDo = models.NewToDo(task, dueDate)
@@ -92,6 +108,18 @@ func (a App) HandleMarkComplete(input string) {
 	}
 
 	err = a.Store.MarkComplete(taskNumber)
+	if err != nil {
+		fmt.Println("Couldn't mark complete: ", err)
+	}
+}
+
+func (a App) HandleMarkInProgress(input string) {
+	taskNumber, err := strconv.Atoi(input[12:])
+	if err != nil {
+		fmt.Println("please enter valid task number ie for task 1 'complete 1'")
+	}
+
+	err = a.Store.MarkInProgress(taskNumber)
 	if err != nil {
 		fmt.Println("Couldn't mark complete: ", err)
 	}

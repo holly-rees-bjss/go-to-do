@@ -10,14 +10,29 @@ import (
 	"todo_app/internal/storage"
 )
 
-func TestCliListToDos(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
+func TestCliHandleListAll(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Completed"},
 	}}
 	app := App{Store: store}
 	expected := "1. Task 1 [Status: Not Started]\n2. Task 2 [Status: Completed]\n"
-	actual := CaptureOutputOf(app.ListToDos)
+	actual := CaptureOutputOf(app.HandleList, "list all")
+
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
+	}
+}
+
+func TestCliHandleListArchive(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+	}}
+	app := App{Store: store}
+	store.MarkComplete(2)
+	expected := "1. Task 2 [Status: Completed]\n"
+	actual := CaptureOutputOf(app.HandleList, "list archive")
 
 	if actual != expected {
 		t.Errorf("Expected %q but got %q", expected, actual)
@@ -25,26 +40,31 @@ func TestCliListToDos(t *testing.T) {
 }
 
 func TestCliHandleAddTodo(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
+	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 	}}
 	app := App{Store: store}
 
-	expected := []models.ToDo{
-		{Task: "Task 1", Status: "Not Started"},
-		{Task: "Task 2", Status: "Not Started"},
-	}
+	expected := 2
 
 	app.HandleAdd("add Task 2")
-	actual := app.Store.GetTodos()
+	actual := len(app.Store.GetTodos())
 
-	if !slices.Equal(actual, expected) {
+	if actual != expected {
 		t.Errorf("Expected %v, got %v", expected, actual)
 	}
+
+	addedTask := store.Todos[1].Task
+	expectedTask := "Task 2"
+
+	if addedTask != "Task 2" {
+		t.Errorf("Expected %v, got %v", expectedTask, addedTask)
+	}
+
 }
 
 func TestHandleAddTodoWithDueDate(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
+	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 	}}
 	app := App{Store: store}
@@ -65,31 +85,45 @@ func TestHandleAddTodoWithDueDate(t *testing.T) {
 }
 
 func TestCliHandleMarkComplete(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
+	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 	}}
 	app := App{Store: store}
 
-	expected := []models.ToDo{
-		{Task: "Task 1", Status: "Completed"},
-	}
+	expected := "Completed"
 
 	app.HandleMarkComplete("complete 1")
-	actual := app.Store.GetTodos()
+	actual := app.Store.GetTodos()[0].Status
 
-	if !slices.Equal(actual, expected) {
-		t.Errorf("Expected %v, got %v", expected, actual)
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
+	}
+}
+
+func TestCliHandleInProgress(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+	}}
+	app := App{Store: store}
+
+	expected := "In Progress"
+
+	app.HandleMarkInProgress("in progress 1")
+	actual := app.Store.GetTodos()[0].Status
+
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
 	}
 }
 
 func TestCliHandleDelete(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
+	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 	}}
 	app := App{Store: store}
 
-	expected := []models.ToDo{
+	expected := []models.Todo{
 		{Task: "Task 2", Status: "Not Started"},
 	}
 
@@ -102,13 +136,13 @@ func TestCliHandleDelete(t *testing.T) {
 }
 
 func TestCliHandleEdit(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
+	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 	}}
 	app := App{Store: store}
 
-	expected := []models.ToDo{
+	expected := []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Edited task", Status: "Not Started"},
 	}
@@ -121,13 +155,13 @@ func TestCliHandleEdit(t *testing.T) {
 	}
 }
 
-func CaptureOutputOf(function func()) string {
+func CaptureOutputOf(function func(...string), parameter string) string {
 	var buffer bytes.Buffer
 	originalOutputSetting := os.Stdout
 	readEnd, writeEnd, _ := os.Pipe()
 	os.Stdout = writeEnd
 
-	function()
+	function(parameter)
 
 	writeEnd.Close()
 	os.Stdout = originalOutputSetting
