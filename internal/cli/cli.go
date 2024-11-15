@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 	"todo_app/internal/models"
 )
 
@@ -19,7 +20,8 @@ func (a App) Run() {
 
 appLoop:
 	for {
-		fmt.Println("What would you like to do? (add, list, complete [task number], delete [task number], edit [task number] [new desciption], exit)")
+		fmt.Println("What would you like to do? (add [task] [optional: due date], list, complete [task number], delete [task number], edit [task number] [new desciption], exit)")
+		fmt.Println("Example: add finish to-do app 22-11-2024")
 		reader := bufio.NewReader(os.Stdin)
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
@@ -64,8 +66,21 @@ func (a App) ListToDos() {
 }
 
 func (a App) HandleAdd(input string) {
-	task := input[4:]
-	toDo := models.ToDo{Task: task, Status: "Not Started"}
+	parts := strings.Split(input, " ")
+	task := strings.Join(parts[1:len(parts)-1], " ")
+
+	layout := "02-01-2006"
+	dueDate, err := time.Parse(layout, parts[len(parts)-1])
+
+	var toDo models.ToDo
+
+	if err != nil {
+		fmt.Println("Error parsing date:", err)
+		toDo = models.ToDo{Task: task, Status: "Not Started"}
+	} else {
+
+		toDo = models.NewToDo(task, dueDate)
+	}
 
 	a.Store.Add(toDo)
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	"slices"
 	"testing"
+	"time"
 	"todo_app/internal/models"
 	"todo_app/internal/storage"
 )
@@ -23,7 +24,7 @@ func TestCliListToDos(t *testing.T) {
 	}
 }
 
-func TestCliHandleAddToDo(t *testing.T) {
+func TestCliHandleAddTodo(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.ToDo{
 		{Task: "Task 1", Status: "Not Started"},
 	}}
@@ -40,6 +41,27 @@ func TestCliHandleAddToDo(t *testing.T) {
 	if !slices.Equal(actual, expected) {
 		t.Errorf("Expected %v, got %v", expected, actual)
 	}
+}
+
+func TestHandleAddTodoWithDueDate(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.ToDo{
+		{Task: "Task 1", Status: "Not Started"},
+	}}
+	app := App{Store: store}
+
+	dueDate := time.Now().Add(24 * time.Hour)
+	formattedDueDate := dueDate.Format("02-01-2006")
+
+	expected := formattedDueDate
+
+	app.HandleAdd("add Task 2 " + formattedDueDate)
+
+	actual := store.Todos[1].DueDate.Format("02-01-2006")
+
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
+	}
+
 }
 
 func TestCliHandleMarkComplete(t *testing.T) {

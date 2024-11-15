@@ -28,11 +28,21 @@ func TestGetHandler(t *testing.T) {
 
 	t.Run("GET /api/todos returns a JSON list of Todos", func(t *testing.T) {
 
-		expected := `[{"Task":"Task 1","Status":"Not Started"},{"Task":"Task 2","Status":"Not Started"}]`
-		actual := strings.TrimSpace(response.Body.String())
+		expected := []models.ToDo{
+			{Task: "Task 1", Status: "Not Started"},
+			{Task: "Task 2", Status: "Not Started"},
+		}
 
-		if actual != expected {
-			t.Errorf("Expected %v, got %v", expected, actual)
+		var actual []models.ToDo
+		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
+			t.Fatal(err)
+		}
+
+		for i, todo := range actual {
+			// ignores DueDate and LastUpdated time.Time fields - could add mock to test for time
+			if todo.Task != expected[i].Task || todo.Status != expected[i].Status {
+				t.Errorf("expected %v, got %v", expected[i], todo)
+			}
 		}
 	})
 
@@ -63,11 +73,16 @@ func TestPostTodoHandler(t *testing.T) {
 
 	t.Run("POST /api/todo returns newly posted Todo", func(t *testing.T) {
 
-		expected := `{"Task":"Task 1","Status":"Not Started"}`
-		actual := strings.TrimSpace(response.Body.String())
+		expected := models.ToDo{Task: "Task 1", Status: "Not Started"}
 
-		if actual != expected {
-			t.Errorf("Expected %v, got %v", expected, actual)
+		var actual models.ToDo
+		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
+			t.Fatal(err)
+		}
+
+		// ignores DueDate and LastUpdated time.Time fields - could add mock to test for time
+		if actual.Task != expected.Task || actual.Status != expected.Status {
+			t.Errorf("expected %v, got %v", expected, actual)
 		}
 	})
 
@@ -113,11 +128,16 @@ func TestPatchTodoStatusCompletedHandler(t *testing.T) {
 
 	t.Run("PATCH /api/todo/{i} returns the patched todo", func(t *testing.T) {
 
-		expected := `{"Task":"Task 1","Status":"Completed"}`
-		actual := strings.TrimSpace(response.Body.String())
+		expected := models.ToDo{Task: "Task 1", Status: "Completed"}
 
-		if actual != expected {
-			t.Errorf("Expected %v, got %v", expected, actual)
+		var actual models.ToDo
+		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
+			t.Fatal(err)
+		}
+
+		// ignores DueDate and LastUpdated time.Time fields - could add mock to test for time
+		if actual.Task != expected.Task || actual.Status != expected.Status {
+			t.Errorf("expected %v, got %v", expected, actual)
 		}
 	})
 

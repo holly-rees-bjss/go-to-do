@@ -4,6 +4,7 @@ type Store interface {
 	GetTodos() []ToDo
 	Add(ToDo)
 	MarkComplete(int) error
+	MarkNotStarted(int) error
 	Delete(int) error
 	EditToDo(int, string) error
 	GetToDo(int) ToDo
