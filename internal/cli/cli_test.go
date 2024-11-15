@@ -11,11 +11,11 @@ import (
 
 func TestCliListToDos(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: true},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Completed"},
 	}}
 	app := App{Store: store}
-	expected := "1. Task 1 [Completed: false]\n2. Task 2 [Completed: true]\n"
+	expected := "1. Task 1 [Status: Not Started]\n2. Task 2 [Status: Completed]\n"
 	actual := CaptureOutputOf(app.ListToDos)
 
 	if actual != expected {
@@ -25,13 +25,13 @@ func TestCliListToDos(t *testing.T) {
 
 func TestCliHandleAddToDo(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
 	}}
 	app := App{Store: store}
 
 	expected := []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
 	}
 
 	app.HandleAdd("add Task 2")
@@ -44,12 +44,12 @@ func TestCliHandleAddToDo(t *testing.T) {
 
 func TestCliHandleMarkComplete(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
 	}}
 	app := App{Store: store}
 
 	expected := []models.ToDo{
-		{Task: "Task 1", Completed: true},
+		{Task: "Task 1", Status: "Completed"},
 	}
 
 	app.HandleMarkComplete("complete 1")
@@ -62,13 +62,13 @@ func TestCliHandleMarkComplete(t *testing.T) {
 
 func TestCliHandleDelete(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
 	}}
 	app := App{Store: store}
 
 	expected := []models.ToDo{
-		{Task: "Task 2", Completed: false},
+		{Task: "Task 2", Status: "Not Started"},
 	}
 
 	app.HandleDelete("delete 1")
@@ -81,14 +81,14 @@ func TestCliHandleDelete(t *testing.T) {
 
 func TestCliHandleEdit(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
 	}}
 	app := App{Store: store}
 
 	expected := []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Edited task", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Edited task", Status: "Not Started"},
 	}
 
 	app.HandleEdit("edit 2 Edited task")

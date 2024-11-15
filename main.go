@@ -9,11 +9,11 @@ import (
 func main() {
 	// select memory
 	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "make a list", Completed: true},
-		{Task: "water plants", Completed: false},
-		{Task: "go outside", Completed: false},
-		{Task: "touch grass", Completed: true},
-		{Task: "learn go", Completed: false},
+		{Task: "make a list", Status: "Not Started"},
+		{Task: "water plants", Status: "Completed"},
+		{Task: "go outside", Status: "Not Started"},
+		{Task: "touch grass", Status: "Not Started"},
+		{Task: "learn go", Status: "In Progress"},
 	}}
 
 	// select app

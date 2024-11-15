@@ -23,7 +23,7 @@ func (m *Inmemory) MarkComplete(num int) (err error) {
 		return fmt.Errorf("invalid number task")
 	}
 
-	m.Todos[i].Completed = true
+	m.Todos[i].Status = "Completed"
 	return nil
 }
 

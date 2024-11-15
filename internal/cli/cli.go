@@ -59,13 +59,13 @@ func (a App) ListToDos() {
 
 	for i, todo := range todos {
 		taskNum := strconv.Itoa(1 + i)
-		fmt.Println(taskNum + ". " + todo.Task + " [Completed: " + strconv.FormatBool(todo.Completed) + "]")
+		fmt.Println(taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]")
 	}
 }
 
 func (a App) HandleAdd(input string) {
 	task := input[4:]
-	toDo := models.ToDo{Task: task, Completed: false}
+	toDo := models.ToDo{Task: task, Status: "Not Started"}
 
 	a.Store.Add(toDo)
 }

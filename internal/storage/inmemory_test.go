@@ -8,15 +8,15 @@ import (
 
 func TestGetToDos(t *testing.T) {
 	store := &Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
-		{Task: "Task 3", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+		{Task: "Task 3", Status: "Not Started"},
 	}}
 
 	expected := []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
-		{Task: "Task 3", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+		{Task: "Task 3", Status: "Not Started"},
 	}
 
 	actual := store.GetTodos()
@@ -28,18 +28,18 @@ func TestGetToDos(t *testing.T) {
 
 func TestAddToDo(t *testing.T) {
 	store := &Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
-		{Task: "Task 3", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+		{Task: "Task 3", Status: "Not Started"},
 	}}
 
-	newToDo := models.ToDo{Task: "Task 4", Completed: false}
+	newToDo := models.ToDo{Task: "Task 4", Status: "Not Started"}
 
 	expected := []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
-		{Task: "Task 3", Completed: false},
-		{Task: "Task 4", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+		{Task: "Task 3", Status: "Not Started"},
+		{Task: "Task 4", Status: "Not Started"},
 	}
 
 	store.Add(newToDo)
@@ -53,14 +53,14 @@ func TestAddToDo(t *testing.T) {
 
 func TestMarkComplete(t *testing.T) {
 	store := &Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
-		{Task: "Task 3", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+		{Task: "Task 3", Status: "Not Started"},
 	}}
 	expected := []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
-		{Task: "Task 3", Completed: true},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+		{Task: "Task 3", Status: "Completed"},
 	}
 
 	store.MarkComplete(3)
@@ -73,13 +73,13 @@ func TestMarkComplete(t *testing.T) {
 
 func TestDeleteToDo(t *testing.T) {
 	store := &Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
-		{Task: "Task 3", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+		{Task: "Task 3", Status: "Not Started"},
 	}}
 	expected := []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
 	}
 
 	store.Delete(3)
@@ -92,10 +92,10 @@ func TestDeleteToDo(t *testing.T) {
 
 func TestEditToDo(t *testing.T) {
 	store := &Inmemory{Todos: []models.ToDo{
-		{Task: "feed the cat", Completed: false},
+		{Task: "feed the cat", Status: "Not Started"},
 	}}
 	expected := []models.ToDo{
-		{Task: "feed the dog", Completed: false},
+		{Task: "feed the dog", Status: "Not Started"},
 	}
 
 	store.EditToDo(1, "feed the dog")
@@ -109,12 +109,12 @@ func TestEditToDo(t *testing.T) {
 
 func TestGetToDo(t *testing.T) {
 	store := &Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
-		{Task: "Task 3", Completed: false},
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+		{Task: "Task 3", Status: "Not Started"},
 	}}
 
-	expected := models.ToDo{Task: "Task 2", Completed: false}
+	expected := models.ToDo{Task: "Task 2", Status: "Not Started"}
 
 	actual := store.GetToDo(2)
 
