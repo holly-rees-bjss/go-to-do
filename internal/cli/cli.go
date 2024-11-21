@@ -3,6 +3,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
@@ -11,7 +12,8 @@ import (
 )
 
 type App struct {
-	Store models.Store
+	Store  models.Store
+	Logger *slog.Logger
 }
 
 func (a App) Run() {

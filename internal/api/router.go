@@ -2,13 +2,15 @@ package api
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	v1 "todo_app/internal/api/v1"
 	"todo_app/internal/models"
 )
 
 type App struct {
-	Store models.Store
+	Store  models.Store
+	Logger *slog.Logger
 }
 
 func (a App) Run() {
@@ -21,7 +23,7 @@ func (a App) Run() {
 }
 
 func setUpRouter(s models.Store) *http.ServeMux {
-	router := http.NewServeMux()
+	router := http.NewServeMux() // request router
 	server := &v1.Server{Store: s}
 	router.HandleFunc("GET /api/todos", server.GetTodos)
 	router.HandleFunc("POST /api/todo", server.PostTodo)
