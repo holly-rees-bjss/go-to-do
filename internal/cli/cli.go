@@ -17,13 +17,14 @@ type App struct {
 }
 
 func (a App) Run() {
+	a.Logger.Info("CLI App starting")
 	fmt.Println("Welcome to your CLI to-do app!\nHere's your To-Do list:")
-	a.HandleList()
+	a.HandleList("list")
 
 appLoop:
 	for {
 		fmt.Println("What would you like to do? (add [task] [optional: due date], list, complete [task number], in progress [task number], delete [task number], edit [task number] [new desciption], exit)")
-		fmt.Println("Example: add finish to-do app 22-11-2024")
+		fmt.Println("Example: add finish to-do app due 22-11-2024")
 		reader := bufio.NewReader(os.Stdin)
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
@@ -62,8 +63,16 @@ appLoop:
 }
 
 func (a App) HandleList(input ...string) {
+	a.Logger.Info("handling list")
 	parts := strings.Split(input[0], " ")
-	selected := strings.TrimSpace(parts[1])
+	var selected = ""
+	if len(parts) > 1 {
+		selected = strings.TrimSpace(parts[1])
+	}
+
+	a.Logger.Debug("handle list",
+		"command line input", parts,
+		"selected", selected)
 
 	switch selected {
 	case "archive":
@@ -84,26 +93,36 @@ func (a App) HandleList(input ...string) {
 }
 
 func (a App) HandleAdd(input string) {
+	a.Logger.Info("Handling add toDo", "input", input)
+
 	parts := strings.Split(input, " ")
-	task := strings.Join(parts[1:len(parts)-1], " ")
 
-	layout := "02-01-2006"
-	dueDate, err := time.Parse(layout, parts[len(parts)-1])
-
+	var task string
 	var toDo models.Todo
 
-	if err != nil {
+	if strings.Contains(input, "due") {
+		layout := "02-01-2006"
+		task = strings.Join(parts[1:len(parts)-2], " ")
+		dueDate, err := time.Parse(layout, parts[len(parts)-1])
+		if err != nil {
+			a.Logger.Error("Couldn't parse date", "error:", err)
+			return
+			// TODO: Error handing - return fmt.Errorf("couldn't parse date: %w", err)
+		}
+		toDo = models.NewToDo(task, dueDate)
+		a.Logger.Info("Todo with due date created", "toDo", toDo)
+	} else {
 		task = strings.Join(parts[1:], " ")
 		toDo = models.Todo{Task: task, Status: "Not Started"}
-	} else {
-
-		toDo = models.NewToDo(task, dueDate)
+		a.Logger.Info("Todo without due date created", "toDo", toDo)
 	}
 
 	a.Store.Add(toDo)
+	a.Logger.Info("toDo added to store", "toDo", toDo)
 }
 
 func (a App) HandleMarkComplete(input string) {
+	a.Logger.Info("handling mark complete", "input", input)
 	taskNumber, err := strconv.Atoi(input[9:])
 	if err != nil {
 		fmt.Println("please enter valid task number ie for task 1 'complete 1'")
@@ -116,6 +135,7 @@ func (a App) HandleMarkComplete(input string) {
 }
 
 func (a App) HandleMarkInProgress(input string) {
+	a.Logger.Info("handling mark inprogress", "input", input)
 	taskNumber, err := strconv.Atoi(input[12:])
 	if err != nil {
 		fmt.Println("please enter valid task number ie for task 1 'complete 1'")

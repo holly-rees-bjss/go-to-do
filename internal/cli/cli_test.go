@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"log/slog"
 	"os"
 	"slices"
 	"testing"
@@ -10,12 +11,19 @@ import (
 	"todo_app/internal/storage"
 )
 
+func setUpAppForTest(store models.Store) App {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+	return App{Store: store, Logger: logger}
+}
+
 func TestCliHandleListAll(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Completed"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 	expected := "1. Task 1 [Status: Not Started]\n2. Task 2 [Status: Completed]\n"
 	actual := CaptureOutputOf(app.HandleList, "list all")
 
@@ -29,7 +37,7 @@ func TestCliHandleListArchive(t *testing.T) {
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 	store.MarkComplete(2)
 	expected := "1. Task 2 [Status: Completed]\n"
 	actual := CaptureOutputOf(app.HandleList, "list archive")
@@ -43,7 +51,7 @@ func TestCliHandleAddTodo(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 
 	expected := 2
 
@@ -67,14 +75,14 @@ func TestHandleAddTodoWithDueDate(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 
 	dueDate := time.Now().Add(24 * time.Hour)
 	formattedDueDate := dueDate.Format("02-01-2006")
 
 	expected := formattedDueDate
 
-	app.HandleAdd("add Task 2 " + formattedDueDate)
+	app.HandleAdd("add Task 2 due " + formattedDueDate)
 
 	actual := store.Todos[1].DueDate.Format("02-01-2006")
 
@@ -88,7 +96,7 @@ func TestCliHandleMarkComplete(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 
 	expected := "Completed"
 
@@ -104,7 +112,7 @@ func TestCliHandleInProgress(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 
 	expected := "In Progress"
 
@@ -121,7 +129,7 @@ func TestCliHandleDelete(t *testing.T) {
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 
 	expected := []models.Todo{
 		{Task: "Task 2", Status: "Not Started"},
@@ -140,7 +148,7 @@ func TestCliHandleEdit(t *testing.T) {
 		{Task: "Task 1", Status: "Not Started"},
 		{Task: "Task 2", Status: "Not Started"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 
 	expected := []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},

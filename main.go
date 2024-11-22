@@ -1,11 +1,13 @@
 package main
 
 import (
-	"flag"
+	"io"
 	"log/slog"
 	"os"
+	"strings"
 	"todo_app/internal/api"
 	"todo_app/internal/cli"
+	l "todo_app/internal/logger"
 	"todo_app/internal/models"
 	"todo_app/internal/storage"
 )
@@ -29,10 +31,18 @@ func main() {
 		{Task: "learn go", Status: "In Progress"},
 	}}
 
-	// select app
-	appType := os.Args[1]
+	var logger *slog.Logger
 
-	logger := initializeLogger()
+	if len(os.Args) > 2 && strings.Contains(os.Args[1], "log") {
+		// Enable logging
+		logger = l.InitializeLogger()
+	} else {
+		// Disable logging by setting a handler that discards logs
+		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
+	}
+
+	// select app
+	appType := os.Args[len(os.Args)-1]
 
 	switch appType {
 	case "cli":
@@ -40,33 +50,5 @@ func main() {
 	case "api":
 		app = api.App{Store: store, Logger: logger}
 	}
-
 	app.Run()
-}
-
-func initializeLogger() *slog.Logger {
-	var logLevel = flag.String("loglevel", "info", "set log level (debug, info, warn, error)")
-
-	flag.Parse()
-
-	// Set up the logger
-	var level slog.Level
-	switch *logLevel {
-	case "debug":
-		level = slog.LevelDebug
-	case "info":
-		level = slog.LevelInfo
-	case "warn":
-		level = slog.LevelWarn
-	case "error":
-		level = slog.LevelError
-	default:
-		level = slog.LevelInfo
-	}
-
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: level,
-	}))
-
-	return logger
 }
