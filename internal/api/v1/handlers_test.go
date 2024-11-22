@@ -13,9 +13,9 @@ import (
 
 func TestGetHandler(t *testing.T) {
 
-	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
 	}}
 
 	serv := &Server{store}
@@ -28,11 +28,21 @@ func TestGetHandler(t *testing.T) {
 
 	t.Run("GET /api/todos returns a JSON list of Todos", func(t *testing.T) {
 
-		expected := `[{"Task":"Task 1","Completed":false},{"Task":"Task 2","Completed":false}]`
-		actual := strings.TrimSpace(response.Body.String())
+		expected := []models.Todo{
+			{Task: "Task 1", Status: "Not Started"},
+			{Task: "Task 2", Status: "Not Started"},
+		}
 
-		if actual != expected {
-			t.Errorf("Expected %v, got %v", expected, actual)
+		var actual []models.Todo
+		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
+			t.Fatal(err)
+		}
+
+		for i, todo := range actual {
+			// ignores DueDate and LastUpdated time.Time fields - could add mock to test for time
+			if todo.Task != expected[i].Task || todo.Status != expected[i].Status {
+				t.Errorf("expected %v, got %v", expected[i], todo)
+			}
 		}
 	})
 
@@ -50,7 +60,7 @@ func TestGetHandler(t *testing.T) {
 
 func TestPostTodoHandler(t *testing.T) {
 	store := &storage.Inmemory{}
-	todo := models.ToDo{Task: "Task 1"}
+	todo := models.Todo{Task: "Task 1", Status: "Not Started"}
 	body, _ := json.Marshal(todo)
 
 	request, _ := http.NewRequest(http.MethodPost, "/api/todo", strings.NewReader(string(body)))
@@ -63,18 +73,23 @@ func TestPostTodoHandler(t *testing.T) {
 
 	t.Run("POST /api/todo returns newly posted Todo", func(t *testing.T) {
 
-		expected := `{"Task":"Task 1","Completed":false}`
-		actual := strings.TrimSpace(response.Body.String())
+		expected := models.Todo{Task: "Task 1", Status: "Not Started"}
 
-		if actual != expected {
-			t.Errorf("Expected %v, got %v", expected, actual)
+		var actual models.Todo
+		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
+			t.Fatal(err)
+		}
+
+		// ignores DueDate and LastUpdated time.Time fields - could add mock to test for time
+		if actual.Task != expected.Task || actual.Status != expected.Status {
+			t.Errorf("expected %v, got %v", expected, actual)
 		}
 	})
 
 	t.Run("POST /api/todo adds todo to storage", func(t *testing.T) {
 
-		expected := []models.ToDo{
-			{Task: "Task 1", Completed: false},
+		expected := []models.Todo{
+			{Task: "Task 1", Status: "Not Started"},
 		}
 		actual := store.Todos
 
@@ -94,11 +109,11 @@ func TestPostTodoHandler(t *testing.T) {
 	})
 }
 
-func TestPatchTodoStatusHandler(t *testing.T) {
+func TestPatchTodoStatusCompletedHandler(t *testing.T) {
 
-	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
 	}}
 
 	patch := StatusPatch{Completed: true}
@@ -113,11 +128,16 @@ func TestPatchTodoStatusHandler(t *testing.T) {
 
 	t.Run("PATCH /api/todo/{i} returns the patched todo", func(t *testing.T) {
 
-		expected := `{"Task":"Task 1","Completed":true}`
-		actual := strings.TrimSpace(response.Body.String())
+		expected := models.Todo{Task: "Task 1", Status: "Completed"}
 
-		if actual != expected {
-			t.Errorf("Expected %v, got %v", expected, actual)
+		var actual models.Todo
+		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
+			t.Fatal(err)
+		}
+
+		// ignores DueDate and LastUpdated time.Time fields - could add mock to test for time
+		if actual.Task != expected.Task || actual.Status != expected.Status {
+			t.Errorf("expected %v, got %v", expected, actual)
 		}
 	})
 
@@ -134,9 +154,9 @@ func TestPatchTodoStatusHandler(t *testing.T) {
 
 func TestDeleteTodoHandler(t *testing.T) {
 
-	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
 	}}
 
 	request, _ := http.NewRequest(http.MethodDelete, "/api/todo/1", nil)
@@ -151,7 +171,7 @@ func TestDeleteTodoHandler(t *testing.T) {
 
 		expectedLen := 1
 		actualLen := len(store.Todos)
-		expected := models.ToDo{Task: "Task 2", Completed: false}
+		expected := models.Todo{Task: "Task 2", Status: "Not Started"}
 		actual := store.Todos[0]
 
 		if actual != expected {

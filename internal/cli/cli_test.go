@@ -2,73 +2,191 @@ package cli
 
 import (
 	"bytes"
+	"log/slog"
 	"os"
 	"slices"
 	"testing"
+	"time"
 	"todo_app/internal/models"
 	"todo_app/internal/storage"
 )
 
-func TestCliListToDos(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: true},
+func setUpAppForTest(store models.Store) App {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+	return App{Store: store, Logger: logger}
+}
+
+func TestCliHandleListAll(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Completed"},
 	}}
-	app := App{Store: store}
-	expected := "1. Task 1 [Completed: false]\n2. Task 2 [Completed: true]\n"
-	actual := CaptureOutputOf(app.ListToDos)
+	app := setUpAppForTest(store)
+	expected := "1. Task 1 [Status: Not Started]\n2. Task 2 [Status: Completed]\n"
+	actual := CaptureOutputOf(app.HandleList, "list all")
 
 	if actual != expected {
 		t.Errorf("Expected %q but got %q", expected, actual)
 	}
 }
 
-func TestCliHandleAddToDo(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
+func TestCliHandleListAllIfTodoHasDueDate(t *testing.T) {
+
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started", DueDate: time.Date(2124, time.November, 22, 0, 0, 0, 0, time.UTC)},
+		{Task: "Task 2", Status: "Completed"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 
-	expected := []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
+	expected := "1. Task 1 [Status: Not Started] [Due: 22-11-2124]\n2. Task 2 [Status: Completed]\n"
+	actual := CaptureOutputOf(app.HandleList, "list all")
+
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
 	}
+}
 
-	app.HandleAdd("add Task 2")
-	actual := app.Store.GetTodos()
+func TestCliHandleListArchive(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+	}}
+	app := setUpAppForTest(store)
+	store.MarkComplete(2)
+	expected := "1. Task 2 [Status: Completed]\n"
+	actual := CaptureOutputOf(app.HandleList, "list archive")
 
-	if !slices.Equal(actual, expected) {
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
+	}
+}
+
+func TestCliHandleListOverdue(t *testing.T) {
+	pastDueDate := time.Now().Add(-24 * time.Hour)
+	futureDueDate := time.Now().Add(24 * time.Hour)
+
+	store := &storage.Inmemory{Todos: []models.Todo{
+		models.NewToDo("Task 1", pastDueDate),
+		models.NewToDo("Task 2", futureDueDate),
+	}}
+	app := setUpAppForTest(store)
+
+	expected := "1. Task 1 [Status: Not Started] [Due: 21-11-2024]\n"
+	actual := CaptureOutputOf(app.HandleList, "list overdue")
+
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
+	}
+}
+
+func TestCheckOverdue(t *testing.T) {
+	pastDueDate := time.Now().Add(-24 * time.Hour)
+	futureDueDate := time.Now().Add(24 * time.Hour)
+
+	store := &storage.Inmemory{Todos: []models.Todo{
+		models.NewToDo("Task 1", pastDueDate),
+		models.NewToDo("Task 2", futureDueDate),
+	}}
+	app := setUpAppForTest(store)
+
+	app.CheckAnyOverdue()
+
+	expected := "Task 1"
+	actual := store.Overdue[0].Task
+
+	if actual != expected {
 		t.Errorf("Expected %v, got %v", expected, actual)
 	}
 }
 
-func TestCliHandleMarkComplete(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
+func TestCliHandleAddTodo(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 
-	expected := []models.ToDo{
-		{Task: "Task 1", Completed: true},
+	expected := 2
+
+	app.HandleAdd("add Task 2")
+	actual := len(app.Store.GetTodos())
+
+	if actual != expected {
+		t.Errorf("Expected %v, got %v", expected, actual)
 	}
 
-	app.HandleMarkComplete("complete 1")
-	actual := app.Store.GetTodos()
+	addedTask := store.Todos[1].Task
+	expectedTask := "Task 2"
 
-	if !slices.Equal(actual, expected) {
-		t.Errorf("Expected %v, got %v", expected, actual)
+	if addedTask != "Task 2" {
+		t.Errorf("Expected %v, got %v", expectedTask, addedTask)
+	}
+
+}
+
+func TestHandleAddTodoWithDueDate(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+	}}
+	app := setUpAppForTest(store)
+
+	dueDate := time.Now().Add(24 * time.Hour)
+	formattedDueDate := dueDate.Format("02-01-2006")
+
+	expected := formattedDueDate
+
+	app.HandleAdd("add Task 2 due " + formattedDueDate)
+
+	actual := store.Todos[1].DueDate.Format("02-01-2006")
+
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
+	}
+
+}
+
+func TestCliHandleMarkComplete(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+	}}
+	app := setUpAppForTest(store)
+
+	expected := "Completed"
+
+	app.HandleMarkComplete("complete 1")
+	actual := app.Store.GetTodos()[0].Status
+
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
+	}
+}
+
+func TestCliHandleInProgress(t *testing.T) {
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+	}}
+	app := setUpAppForTest(store)
+
+	expected := "In Progress"
+
+	app.HandleMarkInProgress("in progress 1")
+	actual := app.Store.GetTodos()[0].Status
+
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
 	}
 }
 
 func TestCliHandleDelete(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 
-	expected := []models.ToDo{
-		{Task: "Task 2", Completed: false},
+	expected := []models.Todo{
+		{Task: "Task 2", Status: "Not Started"},
 	}
 
 	app.HandleDelete("delete 1")
@@ -80,15 +198,15 @@ func TestCliHandleDelete(t *testing.T) {
 }
 
 func TestCliHandleEdit(t *testing.T) {
-	store := &storage.Inmemory{Todos: []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Task 2", Completed: false},
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
 	}}
-	app := App{Store: store}
+	app := setUpAppForTest(store)
 
-	expected := []models.ToDo{
-		{Task: "Task 1", Completed: false},
-		{Task: "Edited task", Completed: false},
+	expected := []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Edited task", Status: "Not Started"},
 	}
 
 	app.HandleEdit("edit 2 Edited task")
@@ -99,13 +217,13 @@ func TestCliHandleEdit(t *testing.T) {
 	}
 }
 
-func CaptureOutputOf(function func()) string {
+func CaptureOutputOf(function func(...string), parameter string) string {
 	var buffer bytes.Buffer
 	originalOutputSetting := os.Stdout
 	readEnd, writeEnd, _ := os.Pipe()
 	os.Stdout = writeEnd
 
-	function()
+	function(parameter)
 
 	writeEnd.Close()
 	os.Stdout = originalOutputSetting
