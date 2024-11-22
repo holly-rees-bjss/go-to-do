@@ -10,4 +10,5 @@ type Store interface {
 	Delete(int) error
 	EditToDo(int, string) error
 	GetToDo(int) Todo
+	SetOverdueList([]Todo)
 }

@@ -187,16 +187,15 @@ func TestCompleteItemsAutomaticallyMovedToArchiveList(t *testing.T) {
 	}
 }
 
-func TestCheckOverdue(t *testing.T) {
+func TestSetOverdueList(t *testing.T) {
 	pastDueDate := time.Now().Add(-24 * time.Hour)
-	futureDueDate := time.Now().Add(24 * time.Hour)
 
-	store := &Inmemory{Todos: []models.Todo{
+	overdueList := []models.Todo{
 		models.NewToDo("Task 1", pastDueDate),
-		models.NewToDo("Task 2", futureDueDate),
-	}}
+	}
+	store := &Inmemory{}
 
-	store.CheckAnyOverdue()
+	store.SetOverdueList(overdueList)
 
 	expected := "Task 1"
 	actual := store.Overdue[0].Task
