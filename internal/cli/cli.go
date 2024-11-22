@@ -86,7 +86,11 @@ func (a App) HandleList(input ...string) {
 
 		for i, todo := range todos {
 			taskNum := strconv.Itoa(1 + i)
-			fmt.Println(taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]")
+			str := taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]"
+			if !todo.DueDate.IsZero() {
+				str += " [Due: " + todo.DueDate.Format("02-01-2006") + "]"
+			}
+			fmt.Println(str)
 		}
 	}
 

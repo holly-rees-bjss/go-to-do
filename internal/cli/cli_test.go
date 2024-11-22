@@ -32,6 +32,22 @@ func TestCliHandleListAll(t *testing.T) {
 	}
 }
 
+func TestCliHandleListAllIfTodoHasDueDate(t *testing.T) {
+
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started", DueDate: time.Date(2124, time.November, 22, 0, 0, 0, 0, time.UTC)},
+		{Task: "Task 2", Status: "Completed"},
+	}}
+	app := setUpAppForTest(store)
+
+	expected := "1. Task 1 [Status: Not Started] [Due: 22-11-2124]\n2. Task 2 [Status: Completed]\n"
+	actual := CaptureOutputOf(app.HandleList, "list all")
+
+	if actual != expected {
+		t.Errorf("Expected %q but got %q", expected, actual)
+	}
+}
+
 func TestCliHandleListArchive(t *testing.T) {
 	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
