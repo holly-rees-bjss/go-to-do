@@ -64,23 +64,23 @@ func TestCliHandleListArchive(t *testing.T) {
 }
 
 func TestCliHandleListOverdue(t *testing.T) {
+	pastDueDate := time.Now().Add(-24 * time.Hour)
+	futureDueDate := time.Now().Add(24 * time.Hour)
+
 	store := &storage.Inmemory{Todos: []models.Todo{
-		{Task: "Task 1", Status: "Not Started"},
-		{Task: "Task 2", Status: "Not Started"},
+		models.NewToDo("Task 1", pastDueDate),
+		models.NewToDo("Task 2", futureDueDate),
 	}}
 	app := setUpAppForTest(store)
-	store.MarkComplete(2)
-	expected := "1. Task 2 [Status: Completed]\n"
-	actual := CaptureOutputOf(app.HandleList, "list archive")
+
+	expected := "1. Task 1 [Status: Not Started] [Due: 21-11-2024]\n"
+	actual := CaptureOutputOf(app.HandleList, "list overdue")
 
 	if actual != expected {
 		t.Errorf("Expected %q but got %q", expected, actual)
 	}
 }
 
-// TODO: Handle list overdue
-
-// TODO: check overdue
 func TestCheckOverdue(t *testing.T) {
 	pastDueDate := time.Now().Add(-24 * time.Hour)
 	futureDueDate := time.Now().Add(24 * time.Hour)

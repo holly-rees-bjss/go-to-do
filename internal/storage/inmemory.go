@@ -20,6 +20,10 @@ func (m *Inmemory) GetArchive() []models.Todo {
 	return m.Archive
 }
 
+func (m *Inmemory) GetOverdue() []models.Todo {
+	return m.Overdue
+}
+
 func (m *Inmemory) Add(newToDo models.Todo) {
 	m.Todos = append(m.Todos, newToDo)
 }

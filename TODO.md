@@ -9,7 +9,7 @@
 - [x] The To Do Store automatically moves Overdue Items (current datetime > due datetime) to an Overdue list.
 - [x] Allows the user to list all or some To Do Items.  For a reduced list this can be based on Status, or list (Archive, Overdue).
 - [x] Include unit and integration tests validating the behaviour of the To Do Store.
-- [ ] Use [log/slog] to capture logging information, provide a [flag] to set the logging level
+- [x] Use [log/slog] to capture logging information, provide a [flag] to set the logging level
 
 
 ### Phase 2 - A client-server CLI persistent To Do Store

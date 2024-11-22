@@ -26,7 +26,7 @@ func (a App) Run() {
 appLoop:
 	for {
 		fmt.Println("What would you like to do? (add [task] [optional: due date], list, complete [task number], in progress [task number], delete [task number], edit [task number] [new desciption], exit)")
-		fmt.Println("Example: add finish to-do app due 22-11-2024")
+		fmt.Println("Example: add finish to-do app due 29-11-2024")
 		reader := bufio.NewReader(os.Stdin)
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
@@ -86,6 +86,15 @@ func (a App) HandleList(input ...string) {
 			fmt.Println("There are no archived tasks.")
 		}
 		for i, todo := range archivedTodos {
+			taskNum := strconv.Itoa(1 + i)
+			fmt.Println(taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]")
+		}
+	case "overdue":
+		overdueTodos := a.Store.GetOverdue()
+		if len(overdueTodos) == 0 {
+			fmt.Println("There are no overdue tasks.")
+		}
+		for i, todo := range overdueTodos {
 			taskNum := strconv.Itoa(1 + i)
 			fmt.Println(taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]")
 		}
@@ -205,7 +214,7 @@ func (a App) CheckAnyOverdue() {
 	var overdue []models.Todo
 	now := time.Now()
 	for _, todo := range a.Store.GetTodos() {
-		if now.After(todo.DueDate) {
+		if !todo.DueDate.IsZero() && now.After(todo.DueDate) {
 			overdue = append(overdue, todo)
 		}
 	}

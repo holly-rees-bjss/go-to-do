@@ -204,3 +204,31 @@ func TestSetOverdueList(t *testing.T) {
 		t.Errorf("Expected %v, got %v", expected, actual)
 	}
 }
+
+func TestGetArchive(t *testing.T) {
+	store := &Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+	}}
+	store.MarkComplete(2)
+	expected := 1
+	actual := len(store.GetArchive())
+	if actual != expected {
+		t.Errorf("Expected %v, got %v", expected, actual)
+	}
+}
+
+func TestGetOverdue(t *testing.T) {
+	pastDueDate := time.Now().Add(-24 * time.Hour)
+	overdueList := []models.Todo{
+		models.NewToDo("Task 1", pastDueDate),
+	}
+	store := &Inmemory{}
+	store.SetOverdueList(overdueList)
+
+	expected := 1
+	actual := len(store.GetOverdue())
+	if actual != expected {
+		t.Errorf("Expected %v, got %v", expected, actual)
+	}
+}
