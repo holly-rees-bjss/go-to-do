@@ -17,4 +17,4 @@ As explained in the start menu, you can navigate by typing the following command
 
 When todo items are marked as complete, they are automatically moved to the Archive list (which you can view with `list archive`). Items that are overdue are also automatically added to the Overdue list (the program checks for any overdue items every time a command is executed).
 
-You can run with logs and specify logging level: `go run main.go -loglevel=debug cli`
+The CLI app is run with the default logging level as Error, but can specify logging level using the logLevel flag eg. `go run main.go -loglevel=debug cli`. Logs for the CLI app are stored in file `cli_logs.log`, storing logs for the most recent run of the application.
