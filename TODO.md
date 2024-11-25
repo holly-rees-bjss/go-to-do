@@ -18,7 +18,11 @@
 >> - chapter 14 - context
 >> - test chapter - fuzzing technique
 
-- [ ] Use [net/http] to wrap the Data Store with the [V1 REST API](./to-do-app-api-v1.yaml).
+- [ ] Use [net/http] to wrap the Data Store with the [V1 REST API]
+        [x] update PatchTodo for different status' (complete, in progress)
+        [x] get todos to return archived with ?list=archive
+        [ ] get todos to return overdue
+        [ ] check overdue middleware function to automatically add overdue item to overdue
 - [ ] Use http server middleware and the [context] package to add a [github.com/google/uuid] TraceID which should be including in [log/slog] traceability of calls through the solution.
 - [ ] Update the CLI App to use the REST API.
 - [ ] Add an JSON Data Store and use a startup [flag] value to tell the server which data store to use.

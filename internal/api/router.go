@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"todo_app/internal/api/middleware"
 	"todo_app/internal/models"
 )
 
@@ -21,12 +22,15 @@ func (a App) Run() {
 	}
 }
 
-func setUpRouter(s models.Store) *http.ServeMux {
+func setUpRouter(s models.Store) http.Handler {
 	router := http.NewServeMux() // request router
 	server := &Server{Store: s}
 	router.HandleFunc("GET /api/todos", server.GetTodos)
 	router.HandleFunc("POST /api/todo", server.PostTodo)
 	router.HandleFunc("PATCH /api/todo/", server.PatchTodoStatus)
 	router.HandleFunc("DELETE /api/todo/", server.DeleteTodo)
-	return router
+
+	checkOverdueMiddleware := middleware.CheckOverdue(s)
+	wrappedRouter := checkOverdueMiddleware(router)
+	return wrappedRouter
 }

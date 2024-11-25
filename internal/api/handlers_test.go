@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
+	"todo_app/internal/api/middleware"
 	"todo_app/internal/models"
 	"todo_app/internal/storage"
 )
@@ -277,6 +279,60 @@ func TestDeleteTodoHandler(t *testing.T) {
 	})
 
 	t.Run("DELETE /api/todo/{i} returns a 200 status code when successful", func(t *testing.T) {
+
+		expected := http.StatusOK
+		actual := response.Code
+
+		if actual != expected {
+			t.Errorf("returned wrong status code: got %v expected %v", actual, expected)
+		}
+	})
+}
+
+func TestGetOverdueTodos(t *testing.T) {
+	pastDueDate := time.Date(2024, time.November, 21, 0, 0, 0, 0, time.UTC)
+	futureDueDate := time.Now().Add(24 * time.Hour)
+
+	store := &storage.Inmemory{Todos: []models.Todo{
+		models.NewToDo("Task 1", pastDueDate),
+		models.NewToDo("Task 2", futureDueDate),
+	}}
+
+	server := &Server{Store: store}
+	checkOverdueMiddleware := middleware.CheckOverdue(store)
+	handler := checkOverdueMiddleware(http.HandlerFunc(server.GetTodos))
+
+	t.Run("GET /api/todos?list=overdue returns a JSON list of overdue Todos", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/api/todos?list=overdue", nil)
+		response := httptest.NewRecorder()
+
+		handler.ServeHTTP(response, request)
+
+		expected := []models.Todo{
+			{Task: "Task 1", Status: "Not Started", DueDate: pastDueDate},
+		}
+
+		var actual []models.Todo
+		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
+			t.Fatal(err)
+		}
+
+		if len(actual) != len(expected) {
+			t.Fatalf("expected %d todos, got %d", len(expected), len(actual))
+		}
+
+		for i, todo := range actual {
+			if todo.Task != expected[i].Task || todo.Status != expected[i].Status || !todo.DueDate.Equal(expected[i].DueDate) {
+				t.Errorf("expected %v, got %v", expected[i], todo)
+			}
+		}
+	})
+
+	t.Run("GET /api/todos?status=overdue returns a 200 status code when successful", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/api/todos?status=overdue", nil)
+		response := httptest.NewRecorder()
+
+		handler.ServeHTTP(response, request)
 
 		expected := http.StatusOK
 		actual := response.Code
