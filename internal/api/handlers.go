@@ -1,4 +1,4 @@
-package v1
+package api
 
 import (
 	"encoding/json"
@@ -12,12 +12,22 @@ type Server struct {
 	Store models.Store
 }
 
-type StatusPatch struct {
-	Completed bool
+type TodoPatch struct {
+	Status string
 }
 
 func (s *Server) GetTodos(writer http.ResponseWriter, request *http.Request) {
-	todos := s.Store.GetTodos()
+	listType := request.URL.Query().Get("list")
+
+	var todos []models.Todo
+	switch listType {
+	case "archive":
+		todos = s.Store.GetArchive()
+	case "overdue":
+		todos = s.Store.GetOverdue()
+	default:
+		todos = s.Store.GetTodos()
+	}
 
 	json.NewEncoder(writer).Encode(todos)
 }
@@ -35,15 +45,20 @@ func (s *Server) PostTodo(writer http.ResponseWriter, request *http.Request) {
 
 func (s *Server) PatchTodoStatus(writer http.ResponseWriter, request *http.Request) {
 	body, _ := io.ReadAll(request.Body)
-	var patch StatusPatch
+	var patch TodoPatch
 	_ = json.Unmarshal(body, &patch)
-	if patch.Completed {
-		index := request.URL.Path[len("/api/todo/"):]
-		i, _ := strconv.Atoi(index)
-		s.Store.MarkComplete(i)
 
-		json.NewEncoder(writer).Encode(s.Store.GetToDo(i))
+	index := request.URL.Path[len("/api/todo/"):]
+	i, _ := strconv.Atoi(index)
+
+	switch {
+	case patch.Status == "Completed":
+		s.Store.MarkComplete(i)
+	case patch.Status == "In Progress":
+		s.Store.MarkInProgress(i)
 	}
+	json.NewEncoder(writer).Encode(s.Store.GetToDo(i))
+
 }
 
 func (s *Server) DeleteTodo(writer http.ResponseWriter, request *http.Request) {

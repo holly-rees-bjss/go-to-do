@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	v1 "todo_app/internal/api/v1"
 	"todo_app/internal/models"
 )
 
@@ -24,7 +23,7 @@ func (a App) Run() {
 
 func setUpRouter(s models.Store) *http.ServeMux {
 	router := http.NewServeMux() // request router
-	server := &v1.Server{Store: s}
+	server := &Server{Store: s}
 	router.HandleFunc("GET /api/todos", server.GetTodos)
 	router.HandleFunc("POST /api/todo", server.PostTodo)
 	router.HandleFunc("PATCH /api/todo/", server.PatchTodoStatus)

@@ -1,4 +1,4 @@
-package v1
+package api
 
 import (
 	"encoding/json"
@@ -21,12 +21,12 @@ func TestGetHandler(t *testing.T) {
 	serv := &Server{store}
 	handler := http.HandlerFunc(serv.GetTodos)
 
-	request, _ := http.NewRequest(http.MethodGet, "/api/todos", nil)
-	response := httptest.NewRecorder()
-
-	handler.ServeHTTP(response, request)
-
 	t.Run("GET /api/todos returns a JSON list of Todos", func(t *testing.T) {
+
+		request, _ := http.NewRequest(http.MethodGet, "/api/todos", nil)
+		response := httptest.NewRecorder()
+
+		handler.ServeHTTP(response, request)
 
 		expected := []models.Todo{
 			{Task: "Task 1", Status: "Not Started"},
@@ -47,6 +47,11 @@ func TestGetHandler(t *testing.T) {
 	})
 
 	t.Run("GET /api/todos returns a 200 status code when successful", func(t *testing.T) {
+
+		request, _ := http.NewRequest(http.MethodGet, "/api/todos", nil)
+		response := httptest.NewRecorder()
+
+		handler.ServeHTTP(response, request)
 
 		expected := http.StatusOK
 		actual := response.Code
@@ -116,7 +121,7 @@ func TestPatchTodoStatusCompletedHandler(t *testing.T) {
 		{Task: "Task 2", Status: "Not Started"},
 	}}
 
-	patch := StatusPatch{Completed: true}
+	patch := TodoPatch{Status: "Completed"}
 	body, _ := json.Marshal(patch)
 	request, _ := http.NewRequest(http.MethodPatch, "/api/todo/1", strings.NewReader(string(body)))
 	response := httptest.NewRecorder()
@@ -129,6 +134,95 @@ func TestPatchTodoStatusCompletedHandler(t *testing.T) {
 	t.Run("PATCH /api/todo/{i} returns the patched todo", func(t *testing.T) {
 
 		expected := models.Todo{Task: "Task 1", Status: "Completed"}
+
+		var actual models.Todo
+		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
+			t.Fatal(err)
+		}
+
+		// ignores DueDate and LastUpdated time.Time fields - could add mock to test for time
+		if actual.Task != expected.Task || actual.Status != expected.Status {
+			t.Errorf("expected %v, got %v", expected, actual)
+		}
+	})
+
+	t.Run("PATCH /api/todo/{i} returns a 200 status code when successful", func(t *testing.T) {
+
+		expected := http.StatusOK
+		actual := response.Code
+
+		if actual != expected {
+			t.Errorf("returned wrong status code: got %v expected %v", actual, expected)
+		}
+	})
+}
+
+func TestPatchCompletedAddsTodoToArchive(t *testing.T) {
+
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+	}}
+
+	patch := TodoPatch{Status: "Completed"}
+	body, _ := json.Marshal(patch)
+	request, _ := http.NewRequest(http.MethodPatch, "/api/todo/2", strings.NewReader(string(body)))
+	response := httptest.NewRecorder()
+
+	serv := &Server{store}
+	handler := http.HandlerFunc(serv.PatchTodoStatus)
+
+	handler.ServeHTTP(response, request)
+
+	t.Run("GET /api/todos?list=archive returns a JSON list of archived Todos", func(t *testing.T) {
+
+		request, _ := http.NewRequest(http.MethodGet, "/api/todos?list=archive", nil)
+		response := httptest.NewRecorder()
+		handler := http.HandlerFunc(serv.GetTodos)
+
+		handler.ServeHTTP(response, request)
+		expected := []models.Todo{
+			{Task: "Task 2", Status: "Completed"},
+		}
+
+		var actual []models.Todo
+		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
+			t.Fatal(err)
+		}
+
+		if len(actual) != len(expected) {
+			t.Fatalf("expected %d todos, got %d", len(expected), len(actual))
+		}
+
+		for i, todo := range actual {
+			// ignores DueDate and LastUpdated time.Time fields - could add mock to test for time
+			if todo.Task != expected[i].Task || todo.Status != expected[i].Status {
+				t.Errorf("expected %v, got %v", expected[i], todo)
+			}
+		}
+	})
+}
+
+func TestPatchTodoStatusInProgressHandler(t *testing.T) {
+
+	store := &storage.Inmemory{Todos: []models.Todo{
+		{Task: "Task 1", Status: "Not Started"},
+		{Task: "Task 2", Status: "Not Started"},
+	}}
+
+	patch := TodoPatch{Status: "In Progress"}
+	body, _ := json.Marshal(patch)
+	request, _ := http.NewRequest(http.MethodPatch, "/api/todo/1", strings.NewReader(string(body)))
+	response := httptest.NewRecorder()
+
+	serv := &Server{store}
+	handler := http.HandlerFunc(serv.PatchTodoStatus)
+
+	handler.ServeHTTP(response, request)
+
+	t.Run("PATCH /api/todo/{i} returns the patched todo", func(t *testing.T) {
+
+		expected := models.Todo{Task: "Task 1", Status: "In Progress"}
 
 		var actual models.Todo
 		if err := json.NewDecoder(response.Body).Decode(&actual); err != nil {
