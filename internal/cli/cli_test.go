@@ -64,7 +64,7 @@ func TestCliHandleListArchive(t *testing.T) {
 }
 
 func TestCliHandleListOverdue(t *testing.T) {
-	pastDueDate := time.Now().Add(-24 * time.Hour)
+	pastDueDate := time.Date(2024, time.November, 21, 0, 0, 0, 0, time.UTC)
 	futureDueDate := time.Now().Add(24 * time.Hour)
 
 	store := &storage.Inmemory{Todos: []models.Todo{
