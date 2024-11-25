@@ -1,10 +1,8 @@
 package main
 
 import (
-	"io"
 	"log/slog"
 	"os"
-	"strings"
 	"todo_app/internal/api"
 	"todo_app/internal/cli"
 	l "todo_app/internal/logger"
@@ -31,23 +29,17 @@ func main() {
 		{Task: "learn go", Status: "In Progress"},
 	}}
 
-	var logger *slog.Logger
-
-	if len(os.Args) > 2 && strings.Contains(os.Args[1], "log") {
-		// Enable logging
-		logger = l.InitializeLogger()
-	} else {
-		// Disable logging by setting a handler that discards logs
-		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
-	}
-
 	// select app
 	appType := os.Args[len(os.Args)-1]
 
 	switch appType {
 	case "cli":
+		logsFile := l.CreateLogsFile()
+		defer logsFile.Close()
+		logger := l.InitializeLogger(logsFile)
 		app = cli.App{Store: store, Logger: logger}
 	case "api":
+		logger := l.InitializeLogger()
 		app = api.App{Store: store, Logger: logger}
 	}
 	app.Run()

@@ -18,6 +18,7 @@ type App struct {
 
 func (a App) Run() {
 	a.Logger.Info("CLI App starting")
+
 	a.CheckAnyOverdue()
 
 	fmt.Println("Welcome to your CLI to-do app!\nHere's your To-Do list:")
@@ -127,9 +128,9 @@ func (a App) HandleAdd(input string) {
 		task = strings.Join(parts[1:len(parts)-2], " ")
 		dueDate, err := time.Parse(layout, parts[len(parts)-1])
 		if err != nil {
+			fmt.Println("Couldn't add this, due date needs to be in the format dd-mm-yyy - please try again!")
 			a.Logger.Error("Couldn't parse date", "error:", err)
 			return
-			// TODO: Error handing - return fmt.Errorf("couldn't parse date: %w", err)?
 		}
 		toDo = models.NewToDo(task, dueDate)
 		a.Logger.Info("Todo with due date created", "toDo", toDo)
@@ -151,11 +152,13 @@ func (a App) HandleMarkComplete(input string) {
 	taskNumber, err := strconv.Atoi(input[9:])
 	if err != nil {
 		fmt.Println("please enter valid task number ie for task 1 'complete 1'")
+		a.Logger.Error("invalid task number", "error:", err)
 	}
 
 	err = a.Store.MarkComplete(taskNumber)
 	if err != nil {
-		fmt.Println("Couldn't mark complete: ", err)
+		fmt.Println("Oops! We couldn't mark that task as complete.")
+		a.Logger.Error("Couldn't mark complete", "error:", err)
 	}
 	fmt.Printf("Marked task number %v as Complete.\n", taskNumber)
 }
@@ -167,11 +170,13 @@ func (a App) HandleMarkInProgress(input string) {
 	taskNumber, err := strconv.Atoi(input[12:])
 	if err != nil {
 		fmt.Println("please enter valid task number ie for task 1 'complete 1'")
+		a.Logger.Error("invalid task number", "error:", err)
 	}
 
 	err = a.Store.MarkInProgress(taskNumber)
 	if err != nil {
-		a.Logger.Error("Couldn't mark todo as complete", "error", err)
+		fmt.Println("Oops! We couldn't mark that task as in progress.")
+		a.Logger.Error("Couldn't mark todo as in progress", "error", err)
 	}
 	fmt.Printf("Marked task number %v as In Progress.\n", taskNumber)
 }
@@ -183,10 +188,12 @@ func (a App) HandleDelete(input string) {
 	taskNumber, err := strconv.Atoi(input[7:])
 	if err != nil {
 		fmt.Println("please enter valid task number ie for task 1 'complete 1'")
+		a.Logger.Error("invalid task number", "error:", err)
 	}
 
 	err = a.Store.Delete(taskNumber)
 	if err != nil {
+		fmt.Println("Oops! We couldn't delete that todo.")
 		a.Logger.Error("Couldn't delete", "error", err)
 	}
 	fmt.Printf("Deleted task number %v.\n", taskNumber)
@@ -200,11 +207,13 @@ func (a App) HandleEdit(input string) {
 	taskNumber, err := strconv.Atoi(args[1])
 	if err != nil {
 		fmt.Println("please enter valid task number ie for task 1 'complete 1'")
+		a.Logger.Error("invalid task number", "error:", err)
 	}
 	editedTask := strings.Join(args[2:], " ")
 
 	err = a.Store.EditToDo(taskNumber, editedTask)
 	if err != nil {
+		fmt.Println("Oops! We couldn't delete that todo.")
 		a.Logger.Error("Couldn't edit", "error", err)
 	}
 	fmt.Printf("Edited task number %v.\n", taskNumber)

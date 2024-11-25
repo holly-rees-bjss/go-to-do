@@ -2,11 +2,12 @@ package logger
 
 import (
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 )
 
-func InitializeLogger() *slog.Logger {
+func InitializeLogger(optionalLogFile ...*os.File) *slog.Logger {
 	var logLevel = flag.String("loglevel", "error", "set log level (debug, info, warn, error)")
 
 	flag.Parse()
@@ -25,9 +26,26 @@ func InitializeLogger() *slog.Logger {
 		level = slog.LevelError
 	}
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+	var loggerOutput *os.File
+
+	if len(optionalLogFile) > 0 && optionalLogFile[0] != nil {
+		loggerOutput = optionalLogFile[0]
+	} else {
+		loggerOutput = os.Stderr
+	}
+
+	logger := slog.New(slog.NewJSONHandler(loggerOutput, &slog.HandlerOptions{
 		Level: level,
 	}))
 
 	return logger
+}
+
+func CreateLogsFile() *os.File {
+	logsFile, err := os.Create("cli_logs.log")
+	if err != nil {
+		fmt.Println("Error creating logs file")
+		panic(err)
+	}
+	return logsFile
 }
