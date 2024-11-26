@@ -1,6 +1,0 @@
-{"time":"2024-11-25T12:43:38.17042Z","level":"INFO","msg":"CLI App starting"}
-{"time":"2024-11-25T12:43:38.171219Z","level":"INFO","msg":"handling list"}
-{"time":"2024-11-25T12:43:38.171231Z","level":"DEBUG","msg":"handle list","command line input":["list"],"selected":""}
-{"time":"2024-11-25T12:56:55.194906Z","level":"INFO","msg":"Handling add toDo","input":"add finish to-do app due 29-11-2024"}
-{"time":"2024-11-25T12:56:55.195904Z","level":"INFO","msg":"Todo with due date created","toDo":{"Task":"finish to-do app","Status":"Not Started","DueDate":"2024-11-29T00:00:00Z","LastUpdated":"2024-11-25T12:56:55.195896Z"}}
-{"time":"2024-11-25T12:56:55.196038Z","level":"INFO","msg":"toDo added to store","toDo":{"Task":"finish to-do app","Status":"Not Started","DueDate":"2024-11-29T00:00:00Z","LastUpdated":"2024-11-25T12:56:55.195896Z"}}

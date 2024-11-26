@@ -33,7 +33,5 @@ func (a *App) setUpRouter() http.Handler {
 
 	checkOverdueMiddleware := middleware.CheckOverdue(a.Store)
 	wrappedRouter := middleware.TraceIDMiddleware(a.Logger, checkOverdueMiddleware(router))
-	// a.Logger = loggerWithTraceID
-	// server.Logger = loggerWithTraceID
 	return wrappedRouter
 }
