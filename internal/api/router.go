@@ -14,7 +14,8 @@ type App struct {
 }
 
 func (a App) Run() {
-	router := setUpRouter(a.Store)
+	a.Logger.Info("Server start up")
+	router := a.setUpRouter()
 	fmt.Println("Server listening on port 8080...")
 	err := http.ListenAndServe(":8080", router)
 	if err != nil {
@@ -22,15 +23,17 @@ func (a App) Run() {
 	}
 }
 
-func setUpRouter(s models.Store) http.Handler {
+func (a *App) setUpRouter() http.Handler {
 	router := http.NewServeMux() // request router
-	server := &Server{Store: s}
+	server := &Server{Store: a.Store}
 	router.HandleFunc("GET /api/todos", server.GetTodos)
 	router.HandleFunc("POST /api/todo", server.PostTodo)
 	router.HandleFunc("PATCH /api/todo/", server.PatchTodoStatus)
 	router.HandleFunc("DELETE /api/todo/", server.DeleteTodo)
 
-	checkOverdueMiddleware := middleware.CheckOverdue(s)
-	wrappedRouter := checkOverdueMiddleware(router)
+	checkOverdueMiddleware := middleware.CheckOverdue(a.Store)
+	wrappedRouter := middleware.TraceIDMiddleware(a.Logger, checkOverdueMiddleware(router))
+	// a.Logger = loggerWithTraceID
+	// server.Logger = loggerWithTraceID
 	return wrappedRouter
 }

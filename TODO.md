@@ -14,15 +14,15 @@
 
 ### Phase 2 - A client-server CLI persistent To Do Store
 
->> - chapter 13 - the standard library for structured encoding/json, net/http
->> - chapter 14 - context
+>> - chapter 13 - the standard library for structured encoding/json, net/http (includes a section on middleware)
+>> - chapter 14 - context (also check out this blog post could be useful: https://go.dev/blog/context)
 >> - test chapter - fuzzing technique
 
-- [ ] Use [net/http] to wrap the Data Store with the [V1 REST API]
+- [x] Use [net/http] to wrap the Data Store with the [V1 REST API]
         [x] update PatchTodo for different status' (complete, in progress)
         [x] get todos to return archived with ?list=archive
-        [ ] get todos to return overdue
-        [ ] check overdue middleware function to automatically add overdue item to overdue
+        [x] get todos to return overdue
+        [x] check overdue middleware function to automatically add overdue item to overdue
 - [ ] Use http server middleware and the [context] package to add a [github.com/google/uuid] TraceID which should be including in [log/slog] traceability of calls through the solution.
 - [ ] Update the CLI App to use the REST API.
 - [ ] Add an JSON Data Store and use a startup [flag] value to tell the server which data store to use.
