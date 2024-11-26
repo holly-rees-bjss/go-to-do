@@ -2,10 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"slices"
 	"strings"
 	"testing"
@@ -15,14 +13,6 @@ import (
 	"todo_app/internal/storage"
 )
 
-func wrapInMiddleware(handler http.Handler) http.Handler {
-	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		Level: slog.LevelError,
-	}))
-
-	return middleware.TraceIDMiddleware(logger, handler)
-}
-
 func TestGetHandler(t *testing.T) {
 
 	store := &storage.Inmemory{Todos: []models.Todo{
@@ -31,7 +21,7 @@ func TestGetHandler(t *testing.T) {
 	}}
 
 	serv := &Server{Store: store}
-	handler := wrapInMiddleware(http.HandlerFunc(serv.GetTodos))
+	handler := http.HandlerFunc(serv.GetTodos)
 
 	t.Run("GET /api/todos returns a JSON list of Todos", func(t *testing.T) {
 
@@ -85,7 +75,7 @@ func TestPostTodoHandler(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	server := &Server{Store: store}
-	handler := wrapInMiddleware(http.HandlerFunc(server.PostTodo))
+	handler := http.HandlerFunc(server.PostTodo)
 	handler.ServeHTTP(response, request)
 
 	t.Run("POST /api/todo returns newly posted Todo", func(t *testing.T) {
@@ -139,7 +129,7 @@ func TestPatchTodoStatusCompletedHandler(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	serv := &Server{Store: store}
-	handler := wrapInMiddleware(http.HandlerFunc(serv.PatchTodoStatus))
+	handler := http.HandlerFunc(serv.PatchTodoStatus)
 
 	handler.ServeHTTP(response, request)
 
@@ -182,7 +172,7 @@ func TestPatchCompletedAddsTodoToArchive(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	serv := &Server{Store: store}
-	handler := wrapInMiddleware(http.HandlerFunc(serv.PatchTodoStatus))
+	handler := http.HandlerFunc(serv.PatchTodoStatus)
 
 	handler.ServeHTTP(response, request)
 
@@ -190,7 +180,7 @@ func TestPatchCompletedAddsTodoToArchive(t *testing.T) {
 
 		request, _ := http.NewRequest(http.MethodGet, "/api/todos?list=archive", nil)
 		response := httptest.NewRecorder()
-		handler := wrapInMiddleware(http.HandlerFunc(serv.GetTodos))
+		handler := http.HandlerFunc(serv.GetTodos)
 
 		handler.ServeHTTP(response, request)
 		expected := []models.Todo{
@@ -228,7 +218,7 @@ func TestPatchTodoStatusInProgressHandler(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	serv := &Server{Store: store}
-	handler := wrapInMiddleware(http.HandlerFunc(serv.PatchTodoStatus))
+	handler := http.HandlerFunc(serv.PatchTodoStatus)
 
 	handler.ServeHTTP(response, request)
 
@@ -269,7 +259,7 @@ func TestDeleteTodoHandler(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	serv := &Server{Store: store}
-	handler := wrapInMiddleware(http.HandlerFunc(serv.DeleteTodo))
+	handler := http.HandlerFunc(serv.DeleteTodo)
 
 	handler.ServeHTTP(response, request)
 
@@ -310,7 +300,7 @@ func TestGetOverdueTodos(t *testing.T) {
 
 	server := &Server{Store: store}
 	checkOverdueMiddleware := middleware.CheckOverdue(store)
-	handler := wrapInMiddleware(checkOverdueMiddleware(http.HandlerFunc(server.GetTodos)))
+	handler := checkOverdueMiddleware(http.HandlerFunc(server.GetTodos))
 
 	t.Run("GET /api/todos?list=overdue returns a JSON list of overdue Todos", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/api/todos?list=overdue", nil)

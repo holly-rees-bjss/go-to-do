@@ -8,15 +8,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type IDkey int
+
+const TraceIDkey IDkey = 1
+
 func TraceIDMiddleware(logger *slog.Logger, next http.Handler) http.Handler {
-	type IDkey int
-	const traceIDkey IDkey = 1
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		traceID := uuid.New().String()
-		ctx := context.WithValue(r.Context(), traceIDkey, traceID)
+		ctx := context.WithValue(r.Context(), TraceIDkey, traceID)
 		loggerWithCtx := logger.With("TraceID", traceID)
-		ctx = context.WithValue(ctx, "logger", loggerWithCtx)
+		slog.SetDefault(loggerWithCtx)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

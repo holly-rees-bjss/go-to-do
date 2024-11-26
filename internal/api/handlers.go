@@ -18,8 +18,8 @@ type TodoPatch struct {
 }
 
 func (s *Server) GetTodos(writer http.ResponseWriter, request *http.Request) {
-	logger := request.Context().Value("logger").(*slog.Logger)
-	logger.Info("GET request")
+	slog.InfoContext(request.Context(), "GET Request")
+
 	listType := request.URL.Query().Get("list")
 
 	var todos []models.Todo
@@ -36,14 +36,13 @@ func (s *Server) GetTodos(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (s *Server) PostTodo(writer http.ResponseWriter, request *http.Request) {
-	logger := request.Context().Value("logger").(*slog.Logger)
-	logger.Info("POST todo request")
+	slog.InfoContext(request.Context(), "POST todo request")
 
 	body, _ := io.ReadAll(request.Body)
 	var todo models.Todo
 	_ = json.Unmarshal(body, &todo)
 
-	logger.Debug("Parsed request", "todo", todo)
+	slog.DebugContext(request.Context(), "Parsed request", "todo", todo)
 
 	s.Store.Add(todo)
 	writer.WriteHeader(http.StatusCreated)
@@ -52,14 +51,13 @@ func (s *Server) PostTodo(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (s *Server) PatchTodoStatus(writer http.ResponseWriter, request *http.Request) {
-	logger := request.Context().Value("logger").(*slog.Logger)
-	logger.Info("PATCH todo request")
+	slog.InfoContext(request.Context(), "PATCH todo request")
 
 	body, _ := io.ReadAll(request.Body)
 	var patch TodoPatch
 	_ = json.Unmarshal(body, &patch)
 
-	logger.Debug("Parsed request", "patch", patch)
+	slog.DebugContext(request.Context(), "Parsed request", "patch", patch)
 
 	index := request.URL.Path[len("/api/todo/"):]
 	i, _ := strconv.Atoi(index)
@@ -75,8 +73,7 @@ func (s *Server) PatchTodoStatus(writer http.ResponseWriter, request *http.Reque
 }
 
 func (s *Server) DeleteTodo(writer http.ResponseWriter, request *http.Request) {
-	logger := request.Context().Value("logger").(*slog.Logger)
-	logger.Info("DELETE request: " + request.URL.Path)
+	slog.InfoContext(request.Context(), "DELETE todo request", "path", request.URL.Path)
 
 	index := request.URL.Path[len("/api/todo/"):]
 	i, _ := strconv.Atoi(index)

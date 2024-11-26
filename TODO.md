@@ -23,7 +23,7 @@
         [x] get todos to return archived with ?list=archive
         [x] get todos to return overdue
         [x] check overdue middleware function to automatically add overdue item to overdue
-- [ ] Use http server middleware and the [context] package to add a [github.com/google/uuid] TraceID which should be including in [log/slog] traceability of calls through the solution.
+- [x] Use http server middleware and the [context] package to add a [github.com/google/uuid] TraceID which should be including in [log/slog] traceability of calls through the solution. (look into https://pkg.go.dev/log/slog#hdr-Contexts too)
 - [ ] Update the CLI App to use the REST API.
 - [ ] Add an JSON Data Store and use a startup [flag] value to tell the server which data store to use.
 - [ ] Include a fuzzing test to validate that the REST `POST /todo` can handle malformed values.
