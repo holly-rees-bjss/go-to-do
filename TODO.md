@@ -16,7 +16,7 @@
 
 >> - chapter 13 - the standard library for structured encoding/json, net/http (includes a section on middleware)
 >> - chapter 14 - context (also check out this blog post could be useful: https://go.dev/blog/context)
->> - test chapter - fuzzing technique
+>> - chapter 15 - fuzzing technique in testing
 
 - [x] Use [net/http] to wrap the Data Store with the [V1 REST API]
         [x] update PatchTodo for different status' (complete, in progress)
@@ -32,6 +32,7 @@
 
 >> - chapter 12 - concurrency 
 >> - chapter 11 - embed
+>> - chapter 15 - benchmark testing 
 
 - [ ] Add a [V2 REST API](./to-do-app-api-v2.yaml) that supports multiple users.
 - [ ] Add a Web App using [html/template] that uses the [V2 REST API](./to-do-app-api-v2.yaml) that supports multiple users
