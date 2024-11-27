@@ -1,7 +1,9 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"slices"
@@ -11,6 +13,8 @@ import (
 	"todo_app/internal/api/middleware"
 	"todo_app/internal/models"
 	"todo_app/internal/storage"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestGetHandler(t *testing.T) {
@@ -340,5 +344,60 @@ func TestGetOverdueTodos(t *testing.T) {
 		if actual != expected {
 			t.Errorf("returned wrong status code: got %v expected %v", actual, expected)
 		}
+	})
+}
+
+func FuzzPostTodo(f *testing.F) {
+	// seed corpus - sets of sample data
+	testcases := [][]byte{
+		[]byte(`{"Task":"Test Todo 1","Status":"Not Started"}`),
+		[]byte(`{"Task":"","Status":""}`),
+		[]byte(`{}`),
+		[]byte(`{"Task":"Test Todo 2","Status":"In Progress"}`),
+		[]byte(`{"Task":""}`),
+		[]byte(`{"Task":"","Status":"Completed"}`),
+		[]byte(`{"todo":""}`),
+		[]byte(`{"Task":"Invalid JSON"`),
+		[]byte(`{"Task":123, "Status":true}`),
+		[]byte(`[{"Task":"Array Task", "Status":"Not Started"}]`),
+		[]byte(`{"Task":"Special \n Characters", "Status":"In Progress"}`),
+		[]byte(`{"Task":null, "Status":null}`),
+		[]byte(`{"invalidJSON asgdfkdgasjfldhalfdsgJAFDHSFL;DGSFJDHGSLFA;DSFDJSGFHDSpecialSFJKDGHSDGKS", "Status":"In Progress"}`),
+	}
+	for _, tc := range testcases {
+		f.Add(tc)
+	}
+
+	f.Fuzz(func(t *testing.T, in []byte) {
+		req := httptest.NewRequest(http.MethodPost, "/todos", bytes.NewReader(in))
+		req.Header.Set("Content-Type", "application/json")
+
+		response := httptest.NewRecorder()
+
+		store := &storage.Inmemory{Todos: []models.Todo{}}
+		server := &Server{Store: store}
+		server.PostTodo(response, req)
+
+		if status := response.Code; status != http.StatusCreated {
+			t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusCreated)
+		}
+
+		var todo models.Todo
+		err := json.Unmarshal(response.Body.Bytes(), &todo)
+		if err != nil {
+			t.Errorf("could not unmarshal response body: %v", err)
+		}
+
+		i := len(store.Todos)
+		storedTodo := store.GetToDo(i)
+		if err != nil {
+			t.Errorf("could not get stored todo: %v", err)
+		}
+
+		if diff := cmp.Diff(todo, storedTodo); diff != "" {
+			t.Errorf("stored todo mismatch (-want +got):\n%s", diff)
+		}
+
+		fmt.Println("Stored todo: ", storedTodo)
 	})
 }
