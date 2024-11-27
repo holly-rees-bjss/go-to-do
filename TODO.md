@@ -14,20 +14,25 @@
 
 ### Phase 2 - A client-server CLI persistent To Do Store
 
->> - chapter 13 - the standard library for structured encoding/json, net/http
->> - chapter 14 - context
->> - test chapter - fuzzing technique
+>> - chapter 13 - the standard library for structured encoding/json, net/http (includes a section on middleware)
+>> - chapter 14 - context (also check out this blog post could be useful: https://go.dev/blog/context)
+>> - chapter 15 - fuzzing technique in testing
 
-- [ ] Use [net/http] to wrap the Data Store with the [V1 REST API](./to-do-app-api-v1.yaml).
-- [ ] Use http server middleware and the [context] package to add a [github.com/google/uuid] TraceID which should be including in [log/slog] traceability of calls through the solution.
+- [x] Use [net/http] to wrap the Data Store with the [V1 REST API]
+        [x] update PatchTodo for different status' (complete, in progress)
+        [x] get todos to return archived with ?list=archive
+        [x] get todos to return overdue
+        [x] check overdue middleware function to automatically add overdue item to overdue
+- [x] Use http server middleware and the [context] package to add a [github.com/google/uuid] TraceID which should be including in [log/slog] traceability of calls through the solution. (look into https://pkg.go.dev/log/slog#hdr-Contexts too)
 - [ ] Update the CLI App to use the REST API.
-- [ ] Add an JSON Data Store and use a startup [flag] value to tell the server which data store to use.
-- [ ] Include a fuzzing test to validate that the REST `POST /todo` can handle malformed values.
+- [x] Add an JSON Data Store and use a startup [flag] value to tell the server which data store to use.
+- [x] Include a fuzzing test to validate that the REST `POST /todo` can handle malformed values.
 
 ### Phase 3 - A multi-user Web App To Do Store
 
 >> - chapter 12 - concurrency 
 >> - chapter 11 - embed
+>> - chapter 15 - benchmark testing 
 
 - [ ] Add a [V2 REST API](./to-do-app-api-v2.yaml) that supports multiple users.
 - [ ] Add a Web App using [html/template] that uses the [V2 REST API](./to-do-app-api-v2.yaml) that supports multiple users
