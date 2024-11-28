@@ -19,7 +19,7 @@ func (a App) Run() {
 	a.Logger.Info("Server start up")
 	router := a.setUpRouter()
 
-	// Enable CORS
+	// enable CORS from react app (5173)
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE"},
@@ -37,11 +37,11 @@ func (a App) Run() {
 }
 
 func (a *App) setUpRouter() http.Handler {
-	router := http.NewServeMux() // request router
+	router := http.NewServeMux()
 	server := &Server{Store: a.Store}
 	router.HandleFunc("GET /api/todos", server.GetTodos)
 	router.HandleFunc("POST /api/todo", server.PostTodo)
-	router.HandleFunc("PATCH /api/todo/", server.PatchTodoStatus)
+	router.HandleFunc("PATCH /api/todo/", server.PatchTodo)
 	router.HandleFunc("DELETE /api/todo/", server.DeleteTodo)
 
 	checkOverdueMiddleware := middleware.CheckOverdue(a.Store)

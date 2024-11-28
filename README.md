@@ -14,7 +14,7 @@ As explained in the start menu, you can navigate by typing the following command
 * complete [task number]                
     - eg. `complete 2` will mark Task 2 as Complete
 * in progress [task number]             
-    - eg. `in progress 1` will mark Task 1 as In Progress
+    - eg. `progress 1` will mark Task 1 as In Progress
 * delete [task number]                  
     - eg. `delete 1` will delete Task 1
 * edit [task number] [new desciption]   
@@ -34,12 +34,12 @@ This API has the following endpoints:
     - /api/todos?list=archive
     - /api/todos?list=overdue
 * POST /api/todo to post a new todo
-* PATCH /api/todo/{i} to update a specific todo (including update Status) 
+* PATCH /api/todo/{i} to update a specific todo (Task, Status or both) 
 * DELETE /api/todo/{i} to delete a specific todo
 
 As with the CLI app, when a todo is marked complete (via a PATCH request), it is automatically added to the Archive list. This API also uses a middleware that checks for any overdue todos every request call, so any overdue todos are automatically added to the Overdue list. 
 
 The API app is also run with the default logging level as Error, but again you can specify logging level (debug, info, warn, error) using the logLevel flag eg. `go run main.go -loglevel=debug api`. 
 
-This phase of the app also introduces persistent data storage with a json store. You can specify which data store you'd like using the `-store` flag and specifying `inmemory` or `json` (eg. `-store=json`). (This is also now true of the CLI app in phase-2, eg. `go run main.go -store=json cli`)
+This phase of the app also introduces persistent data storage with a json store. You can specify which data store you'd like using the `-store` flag and specifying `inmemory` or `json` (eg. `-store=json`). This is also true of the version 1 CLI app, eg. `go run main.go -store=json cli` will run the CLI app with json store. However the version 2 CLI app wraps the API so that relies on whichever data store you select when you run the API app, and thus cannot be run independently - you must start up the API first.
     

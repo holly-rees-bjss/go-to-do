@@ -1,4 +1,4 @@
-package cli
+package v2
 
 import (
 	"bufio"
@@ -8,18 +8,16 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	api "todo_app/internal/cli/api_calls"
 	"todo_app/internal/models"
 )
 
 type App struct {
-	Store  models.Store
 	Logger *slog.Logger
 }
 
 func (a App) Run() {
 	a.Logger.Info("CLI App starting")
-
-	a.CheckAnyOverdue()
 
 	fmt.Println("Welcome to your CLI to-do app!\nHere's your To-Do list:")
 	a.HandleList("list")
@@ -44,7 +42,7 @@ appLoop:
 		case "complete":
 			a.HandleMarkComplete(input)
 
-		case "in progress":
+		case "progress":
 			a.HandleMarkInProgress(input)
 
 		case "delete":
@@ -68,7 +66,6 @@ appLoop:
 
 func (a App) HandleList(input ...string) {
 	a.Logger.Info("handling list")
-	a.CheckAnyOverdue()
 
 	parts := strings.Split(input[0], " ")
 	var selected = ""
@@ -82,7 +79,7 @@ func (a App) HandleList(input ...string) {
 
 	switch selected {
 	case "archive":
-		archivedTodos := a.Store.GetArchive()
+		archivedTodos := api.GetList("archive")
 		if len(archivedTodos) == 0 {
 			fmt.Println("There are no archived tasks.")
 		}
@@ -91,13 +88,12 @@ func (a App) HandleList(input ...string) {
 			fmt.Println(taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]")
 		}
 	case "overdue":
-		overdueTodos := a.Store.GetOverdue()
+		overdueTodos := api.GetList("overdue")
 		if len(overdueTodos) == 0 {
 			fmt.Println("There are no overdue tasks.")
 		}
 		for i, todo := range overdueTodos {
 			taskNum := strconv.Itoa(1 + i)
-			// fmt.Println(taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]")
 			str := taskNum + ". " + todo.Task + " [Status: " + todo.Status + "]"
 			if !todo.DueDate.IsZero() {
 				str += " [Due: " + todo.DueDate.Format("02-01-2006") + "]"
@@ -105,7 +101,7 @@ func (a App) HandleList(input ...string) {
 			fmt.Println(str)
 		}
 	default:
-		todos := a.Store.GetTodos()
+		todos := api.GetAll()
 
 		for i, todo := range todos {
 			taskNum := strconv.Itoa(1 + i)
@@ -121,7 +117,6 @@ func (a App) HandleList(input ...string) {
 
 func (a App) HandleAdd(input string) {
 	a.Logger.Info("Handling add toDo", "input", input)
-	a.CheckAnyOverdue()
 
 	parts := strings.Split(input, " ")
 
@@ -145,14 +140,14 @@ func (a App) HandleAdd(input string) {
 		a.Logger.Info("Todo without due date created", "toDo", toDo)
 	}
 
-	a.Store.Add(toDo)
+	api.Add(toDo)
+
 	a.Logger.Info("toDo added to store", "toDo", toDo)
 	fmt.Printf("Added %v to ToDo List.\n", task)
 }
 
 func (a App) HandleMarkComplete(input string) {
 	a.Logger.Info("handling mark complete", "input", input)
-	a.CheckAnyOverdue()
 
 	taskNumber, err := strconv.Atoi(input[9:])
 	if err != nil {
@@ -160,7 +155,8 @@ func (a App) HandleMarkComplete(input string) {
 		a.Logger.Error("invalid task number", "error:", err)
 	}
 
-	err = a.Store.MarkComplete(taskNumber)
+	patch := models.TodoPatch{Status: "Completed"}
+	err = api.PatchTodo(taskNumber, patch)
 	if err != nil {
 		fmt.Println("Oops! We couldn't mark that task as complete.")
 		a.Logger.Error("Couldn't mark complete", "error:", err)
@@ -170,15 +166,15 @@ func (a App) HandleMarkComplete(input string) {
 
 func (a App) HandleMarkInProgress(input string) {
 	a.Logger.Info("handling mark in progress", "input", input)
-	a.CheckAnyOverdue()
 
-	taskNumber, err := strconv.Atoi(input[12:])
+	taskNumber, err := strconv.Atoi(input[9:])
 	if err != nil {
 		fmt.Println("please enter valid task number ie for task 1 'complete 1'")
 		a.Logger.Error("invalid task number", "error:", err)
 	}
 
-	err = a.Store.MarkInProgress(taskNumber)
+	patch := models.TodoPatch{Status: "In Progress"}
+	err = api.PatchTodo(taskNumber, patch)
 	if err != nil {
 		fmt.Println("Oops! We couldn't mark that task as in progress.")
 		a.Logger.Error("Couldn't mark todo as in progress", "error", err)
@@ -188,7 +184,6 @@ func (a App) HandleMarkInProgress(input string) {
 
 func (a App) HandleDelete(input string) {
 	a.Logger.Info("handling delete", "input", input)
-	a.CheckAnyOverdue()
 
 	taskNumber, err := strconv.Atoi(input[7:])
 	if err != nil {
@@ -196,7 +191,7 @@ func (a App) HandleDelete(input string) {
 		a.Logger.Error("invalid task number", "error:", err)
 	}
 
-	err = a.Store.Delete(taskNumber)
+	err = api.Delete(taskNumber)
 	if err != nil {
 		fmt.Println("Oops! We couldn't delete that todo.")
 		a.Logger.Error("Couldn't delete", "error", err)
@@ -206,7 +201,6 @@ func (a App) HandleDelete(input string) {
 
 func (a App) HandleEdit(input string) {
 	a.Logger.Info("handling edit", "input", input)
-	a.CheckAnyOverdue()
 
 	args := strings.Split(input, " ")
 	taskNumber, err := strconv.Atoi(args[1])
@@ -216,21 +210,11 @@ func (a App) HandleEdit(input string) {
 	}
 	editedTask := strings.Join(args[2:], " ")
 
-	err = a.Store.EditToDo(taskNumber, editedTask)
+	patch := models.TodoPatch{Task: editedTask}
+	err = api.PatchTodo(taskNumber, patch)
 	if err != nil {
 		fmt.Println("Oops! We couldn't delete that todo.")
 		a.Logger.Error("Couldn't edit", "error", err)
 	}
 	fmt.Printf("Edited task number %v.\n", taskNumber)
-}
-
-func (a App) CheckAnyOverdue() {
-	var overdue []models.Todo
-	now := time.Now()
-	for _, todo := range a.Store.GetTodos() {
-		if !todo.DueDate.IsZero() && now.After(todo.DueDate) {
-			overdue = append(overdue, todo)
-		}
-	}
-	a.Store.SetOverdueList(overdue)
 }
