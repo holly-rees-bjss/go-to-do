@@ -1,6 +1,6 @@
 package models
 
 type TodoPatch struct {
-	Status string `json:"task,omitempty"`
-	Task   string `json:"status,omitempty"`
+	Status string `json:"status,omitempty"`
+	Task   string `json:"task,omitempty"`
 }
