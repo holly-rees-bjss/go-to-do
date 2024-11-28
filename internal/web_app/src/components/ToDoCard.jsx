@@ -1,10 +1,9 @@
-import { useContext, useEffect, useState } from "react";
+import { useState } from "react";
 
 import { deleteTodo, patchTodo } from "../api/apiCalls";
 
 
 import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 
 function formatDate(dateString) {
     const date = new Date(dateString);
@@ -15,20 +14,16 @@ function formatDate(dateString) {
     });
 }
 
-function ToDoCard({ todo, index }) {
-
-
-    console.log(todo, "<<<<<")
+function ToDoCard({ todo, index, handleRefresh }) {
 
     const [feedbackMsg, setFeedbackMsg] = useState("");
 
     function handleDelete(event) {
         const i = parseInt(event.target.value, 10) + 1;
-        console.log(i, "<< todo index")
         deleteTodo(i)
             .then(() => {
                 setFeedbackMsg("deleted!");
-
+                handleRefresh()
             })
             .catch((err) => {
                 console.log(err);
@@ -40,11 +35,25 @@ function ToDoCard({ todo, index }) {
 
     function handleMarkComplete(event) {
         const i = parseInt(event.target.value, 10) + 1;
-        console.log(i, "<< todo index")
         patchTodo(i, "Completed")
             .then(() => {
                 setFeedbackMsg("marked complete!");
+                handleRefresh()
+            })
+            .catch((err) => {
+                console.log(err);
+                setFeedbackMsg(
+                    "Oops, something went wrong! Couldn't update your todo."
+                );
+            });
+    }
 
+    function handleMarkInProgress(event) {
+        const i = parseInt(event.target.value, 10) + 1;
+        patchTodo(i, "In Progress")
+            .then(() => {
+                setFeedbackMsg("marked In Progress!");
+                handleRefresh()
             })
             .catch((err) => {
                 console.log(err);
@@ -79,6 +88,19 @@ function ToDoCard({ todo, index }) {
                     onClick={handleMarkComplete}
                 >
                     mark complete
+                </button>
+                <button
+                    value={index}
+                    style={{
+                        backgroundColor: "#e4e4e4",
+                        color: "black",
+                        margin: "1vw",
+                        padding: "1vw",
+                        alignContent: "right",
+                    }}
+                    onClick={handleMarkInProgress}
+                >
+                    mark in progress
                 </button>
                 <button
                     value={index}

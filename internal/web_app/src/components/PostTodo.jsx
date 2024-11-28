@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 
 import { postTodo } from "../api/apiCalls";
 
-function PostTodo() {
+function PostTodo({ handleRefresh }) {
 
     const [userInput, setUserInput] = useState({ Task: "", Status: "Not Started", DueDate: "" });
     const [feedbackMsg, setFeedbackMsg] = useState("");
@@ -18,7 +18,7 @@ function PostTodo() {
         })
             .then((res) => {
                 setFeedbackMsg("Todo posted!");
-
+                handleRefresh()
             })
             .catch((err) => {
                 console.log(err);

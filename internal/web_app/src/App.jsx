@@ -16,7 +16,11 @@ function App() {
     getTodos().then((todos) => {
       setTodos(todos)
     })
-  }, [])
+  }, [count])
+
+  const handleRefresh = () => {
+    setCount(c => c + 1)
+  }
 
 
   return (
@@ -30,13 +34,13 @@ function App() {
         <ol>
           {todos.map((todo, i) => (
             < li key={uuidv4()} >
-              <ToDoCard todo={todo} index={i}></ToDoCard>
+              <ToDoCard todo={todo} index={i} handleRefresh={handleRefresh}></ToDoCard>
             </li>
           ))}
         </ol>
 
       </div >
-      <PostTodo />
+      <PostTodo handleRefresh={handleRefresh} />
     </>
   )
 }
