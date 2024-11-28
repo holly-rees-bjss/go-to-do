@@ -43,3 +43,8 @@ The API app is also run with the default logging level as Error, but again you c
 
 This phase of the app also introduces persistent data storage with a json store. You can specify which data store you'd like using the `-store` flag and specifying `inmemory` or `json` (eg. `-store=json`). This is also true of the version 1 CLI app, eg. `go run main.go -store=json cli` will run the CLI app with json store. However the version 2 CLI app wraps the API so that relies on whichever data store you select when you run the API app, and thus cannot be run independently - you must start up the API first.
     
+## Phase 3: A web app that wraps the API
+
+This React app consumes the API. To use, first make sure to start the api `go run main.go api` (this defaults to using the JSON memory store), to run the server locally. 
+To run the React app locally, you will need Node.js installed. Install the required dependencies with `npm i`, navigate to the `web_app` directory and launch using `npm run dev`.
+This web app allows you to view all the todos, mark as complete or in progress, delete a todo and add a new todo. Data is persistent and saved to the json store.
