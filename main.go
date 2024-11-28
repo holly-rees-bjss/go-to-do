@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"todo_app/internal/api"
-	"todo_app/internal/cli"
+	v2 "todo_app/internal/cli/v2"
 	l "todo_app/internal/logger"
 	"todo_app/internal/models"
 	"todo_app/internal/storage"
@@ -43,7 +43,6 @@ func main() {
 		store, _ = j.NewJSONStore("./json_store.json")
 	}
 
-	// select app - TO DO: update to use flags instead of os.Args
 	appType := os.Args[len(os.Args)-1]
 
 	switch appType {
@@ -51,7 +50,8 @@ func main() {
 		logsFile := l.CreateLogsFile()
 		defer logsFile.Close()
 		logger := l.InitializeLogger(logLevel, logsFile)
-		app = cli.App{Store: store, Logger: logger}
+		//app = v1.App{Store: store, Logger: logger}
+		app = v2.App{Logger: logger}
 	case "api":
 		logger := l.InitializeLogger(logLevel)
 		app = api.App{Store: store, Logger: logger}
