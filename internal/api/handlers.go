@@ -13,11 +13,6 @@ type Server struct {
 	Store models.Store
 }
 
-type TodoPatch struct {
-	Status string `json:"Task,omitempty"`
-	Task   string `json:"Status,omitempty"`
-}
-
 func (s *Server) GetTodos(writer http.ResponseWriter, request *http.Request) {
 	slog.InfoContext(request.Context(), "GET Request")
 
@@ -55,7 +50,7 @@ func (s *Server) PatchTodo(writer http.ResponseWriter, request *http.Request) {
 	slog.InfoContext(request.Context(), "PATCH todo request")
 
 	body, _ := io.ReadAll(request.Body)
-	var patch TodoPatch
+	var patch models.TodoPatch
 	_ = json.Unmarshal(body, &patch)
 
 	slog.DebugContext(request.Context(), "Parsed request", "patch", patch)

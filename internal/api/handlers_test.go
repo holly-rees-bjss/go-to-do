@@ -127,7 +127,7 @@ func TestPatchTodoCompletedHandler(t *testing.T) {
 		{Task: "Task 2", Status: "Not Started"},
 	}}
 
-	patch := TodoPatch{Status: "Completed"}
+	patch := models.TodoPatch{Status: "Completed"}
 	body, _ := json.Marshal(patch)
 	request, _ := http.NewRequest(http.MethodPatch, "/api/todo/1", strings.NewReader(string(body)))
 	response := httptest.NewRecorder()
@@ -170,7 +170,7 @@ func TestPatchCompletedAddsTodoToArchive(t *testing.T) {
 		{Task: "Task 2", Status: "Not Started"},
 	}}
 
-	patch := TodoPatch{Status: "Completed"}
+	patch := models.TodoPatch{Status: "Completed"}
 	body, _ := json.Marshal(patch)
 	request, _ := http.NewRequest(http.MethodPatch, "/api/todo/2", strings.NewReader(string(body)))
 	response := httptest.NewRecorder()
@@ -216,7 +216,7 @@ func TestPatchTodoInProgressHandler(t *testing.T) {
 		{Task: "Task 2", Status: "Not Started"},
 	}}
 
-	patch := TodoPatch{Status: "In Progress"}
+	patch := models.TodoPatch{Status: "In Progress"}
 	body, _ := json.Marshal(patch)
 	request, _ := http.NewRequest(http.MethodPatch, "/api/todo/1", strings.NewReader(string(body)))
 	response := httptest.NewRecorder()
