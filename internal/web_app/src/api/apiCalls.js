@@ -4,6 +4,7 @@ function getTodos() {
     return axios
         .get(`http://localhost:8080/api/todos`)
         .then(({ data }) => {
+            console.log("todos>>> ", data)
             return data;
 
         })
@@ -29,7 +30,7 @@ function deleteTodo(index) {
 
 
 function patchTodo(index, status) {
-    const patch = { Status: status }
+    const patch = { Task: "", Status: status }
     return axios
         .patch(
             `http://localhost:8080/api/todo/${index}`,
