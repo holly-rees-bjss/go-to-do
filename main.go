@@ -23,8 +23,9 @@ type App struct {
 
 func main() {
 
-	// select memory
 	var storeType = flag.String("store", "memory", "set data store type (memory, json)")
+	var logLevel = flag.String("loglevel", "error", "set log level (debug, info, warn, error)")
+
 	flag.Parse()
 
 	var store models.Store
@@ -42,17 +43,17 @@ func main() {
 		store, _ = j.NewJSONStore("./json_store.json")
 	}
 
-	// select app - TO DO update to use flags instead of os.Args
+	// select app - TO DO: update to use flags instead of os.Args
 	appType := os.Args[len(os.Args)-1]
 
 	switch appType {
 	case "cli":
 		logsFile := l.CreateLogsFile()
 		defer logsFile.Close()
-		logger := l.InitializeLogger(logsFile)
+		logger := l.InitializeLogger(logLevel, logsFile)
 		app = cli.App{Store: store, Logger: logger}
 	case "api":
-		logger := l.InitializeLogger()
+		logger := l.InitializeLogger(logLevel)
 		app = api.App{Store: store, Logger: logger}
 	}
 	app.Run()

@@ -1,16 +1,15 @@
 package logger
 
 import (
-	"flag"
 	"fmt"
 	"log/slog"
 	"os"
 )
 
-func InitializeLogger(optionalLogFile ...*os.File) *slog.Logger {
-	var logLevel = flag.String("loglevel", "error", "set log level (debug, info, warn, error)")
+func InitializeLogger(logLevel *string, optionalLogFile ...*os.File) *slog.Logger {
+	// var logLevel = flag.String("loglevel", "error", "set log level (debug, info, warn, error)")
 
-	flag.Parse()
+	// flag.Parse()
 
 	var level slog.Level
 	switch *logLevel {
