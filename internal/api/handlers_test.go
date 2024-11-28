@@ -120,7 +120,7 @@ func TestPostTodoHandler(t *testing.T) {
 	})
 }
 
-func TestPatchTodoStatusCompletedHandler(t *testing.T) {
+func TestPatchTodoCompletedHandler(t *testing.T) {
 
 	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
@@ -133,7 +133,7 @@ func TestPatchTodoStatusCompletedHandler(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	serv := &Server{Store: store}
-	handler := http.HandlerFunc(serv.PatchTodoStatus)
+	handler := http.HandlerFunc(serv.PatchTodo)
 
 	handler.ServeHTTP(response, request)
 
@@ -176,7 +176,7 @@ func TestPatchCompletedAddsTodoToArchive(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	serv := &Server{Store: store}
-	handler := http.HandlerFunc(serv.PatchTodoStatus)
+	handler := http.HandlerFunc(serv.PatchTodo)
 
 	handler.ServeHTTP(response, request)
 
@@ -209,7 +209,7 @@ func TestPatchCompletedAddsTodoToArchive(t *testing.T) {
 	})
 }
 
-func TestPatchTodoStatusInProgressHandler(t *testing.T) {
+func TestPatchTodoInProgressHandler(t *testing.T) {
 
 	store := &storage.Inmemory{Todos: []models.Todo{
 		{Task: "Task 1", Status: "Not Started"},
@@ -222,7 +222,7 @@ func TestPatchTodoStatusInProgressHandler(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	serv := &Server{Store: store}
-	handler := http.HandlerFunc(serv.PatchTodoStatus)
+	handler := http.HandlerFunc(serv.PatchTodo)
 
 	handler.ServeHTTP(response, request)
 

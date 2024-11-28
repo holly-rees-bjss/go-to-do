@@ -1,0 +1,12 @@
+{"time":"2024-11-28T15:58:02.14222Z","level":"INFO","msg":"CLI App starting"}
+{"time":"2024-11-28T15:58:02.142893Z","level":"INFO","msg":"handling list"}
+{"time":"2024-11-28T15:58:02.142906Z","level":"DEBUG","msg":"handle list","command line input":["list"],"selected":""}
+{"time":"2024-11-28T15:58:04.297449Z","level":"INFO","msg":"handling list"}
+{"time":"2024-11-28T15:58:04.297635Z","level":"DEBUG","msg":"handle list","command line input":["list","all"],"selected":"all"}
+{"time":"2024-11-28T15:58:08.82908Z","level":"INFO","msg":"handling list"}
+{"time":"2024-11-28T15:58:08.829209Z","level":"DEBUG","msg":"handle list","command line input":["list","archive"],"selected":"archive"}
+{"time":"2024-11-28T15:58:27.86627Z","level":"INFO","msg":"handling mark in progress","input":"progress 1"}
+{"time":"2024-11-28T15:58:30.241537Z","level":"INFO","msg":"handling list"}
+{"time":"2024-11-28T15:58:30.242349Z","level":"DEBUG","msg":"handle list","command line input":["list","all"],"selected":"all"}
+{"time":"2024-11-28T15:58:35.900217Z","level":"INFO","msg":"handling list"}
+{"time":"2024-11-28T15:58:35.900255Z","level":"DEBUG","msg":"handle list","command line input":["list","archive"],"selected":"archive"}

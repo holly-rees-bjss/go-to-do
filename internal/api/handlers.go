@@ -14,7 +14,8 @@ type Server struct {
 }
 
 type TodoPatch struct {
-	Status string
+	Status string `json:"Task,omitempty"`
+	Task   string `json:"Status,omitempty"`
 }
 
 func (s *Server) GetTodos(writer http.ResponseWriter, request *http.Request) {
@@ -50,7 +51,7 @@ func (s *Server) PostTodo(writer http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(writer).Encode(todo)
 }
 
-func (s *Server) PatchTodoStatus(writer http.ResponseWriter, request *http.Request) {
+func (s *Server) PatchTodo(writer http.ResponseWriter, request *http.Request) {
 	slog.InfoContext(request.Context(), "PATCH todo request")
 
 	body, _ := io.ReadAll(request.Body)
@@ -62,11 +63,17 @@ func (s *Server) PatchTodoStatus(writer http.ResponseWriter, request *http.Reque
 	index := request.URL.Path[len("/api/todo/"):]
 	i, _ := strconv.Atoi(index)
 
-	switch {
-	case patch.Status == "Completed":
-		s.Store.MarkComplete(i)
-	case patch.Status == "In Progress":
-		s.Store.MarkInProgress(i)
+	if patch.Task != "" {
+		s.Store.EditToDo(i, patch.Task)
+	}
+
+	if patch.Status != "" {
+		switch {
+		case patch.Status == "Completed":
+			s.Store.MarkComplete(i)
+		case patch.Status == "In Progress":
+			s.Store.MarkInProgress(i)
+		}
 	}
 	json.NewEncoder(writer).Encode(s.Store.GetToDo(i))
 

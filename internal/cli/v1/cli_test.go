@@ -1,4 +1,4 @@
-package cli
+package v1
 
 import (
 	"bytes"
