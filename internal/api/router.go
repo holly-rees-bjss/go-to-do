@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"todo_app/internal/api/middleware"
 	"todo_app/internal/models"
+
+	"github.com/rs/cors"
 )
 
 type App struct {
@@ -16,8 +18,19 @@ type App struct {
 func (a App) Run() {
 	a.Logger.Info("Server start up")
 	router := a.setUpRouter()
+
+	// Enable CORS
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+	})
+
+	handler := c.Handler(router)
+
 	fmt.Println("Server listening on port 8080...")
-	err := http.ListenAndServe(":8080", router)
+	err := http.ListenAndServe(":8080", handler)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 	}
