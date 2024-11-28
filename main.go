@@ -41,6 +41,8 @@ func main() {
 		}}
 	case "json":
 		store, _ = j.NewJSONStore("./json_store.json")
+	default:
+		store, _ = j.NewJSONStore("./json_store.json")
 	}
 
 	appType := os.Args[len(os.Args)-1]
